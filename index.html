@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Completo - Entre Alunos</title>
+
+  <style>
+    :root{
+      --primary:#2979ff;
+      --primary-dark:#1f5dcc;
+      --glass: rgba(255,255,255,0.85);
+    }
+
+    *{box-sizing:border-box; font-weight:800;}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #bcdcff, #d9ecff, #c7e2ff);
+      min-height: 100vh;
+    }
+
+    .centro {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      padding: 36px;
+      border-radius: 18px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      width: 360px;
+      text-align: center;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px);} to { opacity:1; transform: translateY(0);} }
+
+    h1{ margin:0 0 8px; font-size:24px; color:var(--primary)}
+    h3{ margin:0 0 18px; font-size:16px; color:#444}
+
+    .campo{ text-align:left; width:100%; margin-bottom:12px }
+    .campo label{ display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:13px }
+    .campo input, .campo select{ width:100%; padding:11px; border-radius:10px; border:1px solid #a7c9ff; background:#eef7ff }
+
+    button{ width:100%; padding:12px; border-radius:10px; border:none; background:var(--primary); color:#fff; font-weight:700; cursor:pointer; transition: background .18s }
+    button:hover{ background:var(--primary-dark) }
+
+    .link{ display:block; margin-top:12px; color:var(--primary); text-decoration:none }
+    .link:hover{ text-decoration:underline }
+
+    #dashboard { display:none; height:100vh; }
+    .app { display:flex; height:100%; }
+
+    .sidebar{ width:240px; background:var(--primary); color:#fff; padding:20px; display:flex; flex-direction:column }
+    .sidebar h2{ text-align:center; margin:0 0 20px }
+
+    .menu-btn{ background: #1f5dcc; padding:12px; margin-bottom:12px; border-radius:12px; text-align:center; cursor:pointer; user-select:none; transition: transform .12s }
+    .menu-btn:hover{ box-shadow: 0 10px 25px rgba(0,0,0,0.22) }
+    .menu-btn:active{ transform: translateY(1px) }
+
+    .topbar{ display:flex; justify-content:space-between; align-items:center; padding:18px 28px; background:transparent }
+    .conteudo{ flex:1; padding:28px; background:#f2f6ff }
+
+    .cards{ display:flex; gap:18px; flex-wrap:wrap }
+    .card{ background:#fff; padding:20px; border-radius:14px; width:260px; box-shadow:none; transition: box-shadow .18s }
+    .card:hover{ box-shadow: 0 8px 24px rgba(0,0,0,0.12) }
+
+    @media (max-width:900px){ .cards{ justify-content:center } .sidebar{ display:none } }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="centro" id="loginArea">
+    <div class="container">
+      <h1>Entre Alunos</h1>
+      <h3>Login</h3>
+
+      <div class="campo">
+        <label for="tipoUsuario">Tipo de usuário</label>
+        <select id="tipoUsuario">
+          <option value="aluno">Sou Aluno</option>
+          <option value="gestor">Sou Gestor</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="emailLogin">E-mail</label>
+        <input type="email" id="emailLogin" required placeholder="Seu e-mail" />
+      </div>
+
+      <div class="campo">
+        <label for="senhaLogin">Senha</label>
+        <input type="password" id="senhaLogin" required placeholder="Senha" />
+      </div>
+
+      <button onclick="login()">Entrar</button>
+
+      <a class="link" href="#" onclick="mostrarCadastro(); return false;">Não tem conta? Crie uma</a>
+      <a class="link" href="#" onclick="mostrarRecuperarSenha(); return false;">Esqueci minha senha</a>
+    </div>
+  </div>
+
+  <!-- CADASTRO -->
+  <div class="centro" id="cadastroArea" style="display: none;">
+    <div class="container">
+      <h1>Entre Alunos</h1>
+      <h3>Cadastro</h3>
+
+      <div class="campo">
+        <label for="cadTipo">Tipo de usuário</label>
+        <select id="cadTipo">
+          <option value="aluno">Aluno</option>
+          <option value="gestor">Gestor</option>
+        </select>
+      </div>
+
+      <div id="camposAluno">
+        <div class="campo">
+          <label for="cadNascimento">Data de Nascimento</label>
+          <input type="date" id="cadNascimento" />
+        </div>
+
+        <div class="campo">
+          <label for="cadMatricula">RA</label>
+          <input type="text" id="cadMatricula" placeholder="RA do aluno" />
+        </div>
+      </div>
+
+      <div id="camposGestor" style="display: none;">
+        <div class="campo">
+          <label for="cadCodigoGestor">Código de Autorização</label>
+          <input type="text" id="cadCodigoGestor" placeholder="Ex: GESTOR2025" />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="cadNome">Nome Completo</label>
+        <input type="text" id="cadNome" placeholder="Nome completo" />
+      </div>
+
+      <div class="campo">
+        <label for="cadEmail">E-mail</label>
+        <input type="email" id="cadEmail" placeholder="E-mail" />
+      </div>
+
+      <div class="campo">
+        <label for="cadSenha">Senha</label>
+        <input type="password" id="cadSenha" placeholder="Senha" />
+      </div>
+
+      <button onclick="cadastrar()">Cadastrar</button>
+      <a class="link" href="#" onclick="mostrarLogin(); return false;">Já tenho conta</a>
+    </div>
+  </div>
+
+  <!-- RECUPERAR SENHA -->
+  <div class="centro" id="recuperarArea" style="display: none;">
+    <div class="container">
+      <h1>Recuperar Senha</h1>
+      <h3>Digite seu e-mail cadastrado</h3>
+
+      <div class="campo">
+        <label for="recEmail">E-mail</label>
+        <input type="email" id="recEmail" placeholder="Seu e-mail" />
+      </div>
+
+      <button onclick="validarEmail()">Continuar</button>
+      <a class="link" href="#" onclick="mostrarLogin(); return false;">Voltar ao login</a>
+    </div>
+  </div>
+
+  <!-- NOVA SENHA -->
+  <div class="centro" id="novaSenhaArea" style="display: none;">
+    <div class="container">
+      <h1>Nova Senha</h1>
+
+      <div class="campo">
+        <label for="novaSenha">Nova senha</label>
+        <input type="password" id="novaSenha" placeholder="Digite sua nova senha" />
+      </div>
+
+      <button onclick="salvarNovaSenha()">Salvar nova senha</button>
+      <a class="link" href="#" onclick="mostrarLogin(); return false;">Voltar ao login</a>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" style="display:none;">
+    <div class="app">
+      <div class="sidebar">
+        <h2>Dashboard</h2>
+        <div class="menu-btn" onclick="mostrarPainel('inicio')">Início</div>
+        <div class="menu-btn" onclick="mostrarPainel('alunos')">Alunos</div>
+        <div class="menu-btn" onclick="mostrarPainel('mensagens')">Mensagens</div>
+        <div class="menu-btn" onclick="mostrarPainel('config')">Configurações</div>
+        <div style="flex:1"></div>
+        <div class="menu-btn" onclick="logout()">Sair</div>
+      </div>
+
+      <div style="flex:1; display:flex; flex-direction:column;">
+        <div class="topbar">
+          <div style="font-weight:700; font-size:18px; color:#333">Entre Alunos — Painel</div>
+          <div id="usuarioInfo" style="color:#333; font-weight:600"></div>
+        </div>
+
+        <div class="conteudo">
+          <div id="painelInicio">
+            <h2>Bem-vindo ao painel</h2>
+            <div class="cards">
+              <div class="card">
+                <h4>Total de Alunos</h4>
+                <p id="totalAlunos">0</p>
+              </div>
+
+              <div class="card">
+                <h4>Solicitações Pendentes</h4>
+                <p>0</p>
+              </div>
+
+              <div class="card">
+                <h4>Notificações</h4>
+                <p>0</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="painelAlunos" style="display:none">
+            <h2>Lista de Alunos</h2>
+            <div id="listaAlunos"></div>
+          </div>
+
+          <div id="painelMensagens" style="display:none"><h2>Mensagens</h2><p>Nenhuma mensagem.</p></div>
+          <div id="painelConfig" style="display:none"><h2>Configurações</h2><p>Aqui você pode ajustar preferências.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SENHA_GESTOR = "admin123";
+    const CODIGO_AUTORIZACAO = "GESTOR2025";
+    let emailParaReset = "";
+
+    function mostrarCadastro(){ hideAll(); document.getElementById('cadastroArea').style.display='flex'; }
+    function mostrarLogin(){ hideAll(); document.getElementById('loginArea').style.display='flex'; }
+    function mostrarRecuperarSenha(){ hideAll(); document.getElementById('recuperarArea').style.display='flex'; }
+    function mostrarNovaSenha(){ hideAll(); document.getElementById('novaSenhaArea').style.display='flex'; }
+
+    function hideAll(){ ['loginArea','cadastroArea','recuperarArea','novaSenhaArea','dashboard'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; }); }
+
+    document.getElementById('cadTipo').addEventListener('change', ()=>{
+      const tipo = document.getElementById('cadTipo').value;
+      document.getElementById('camposAluno').style.display = tipo==='aluno' ? 'block' : 'none';
+      document.getElementById('camposGestor').style.display = tipo==='gestor' ? 'block' : 'none';
+    });
+
+    function cadastrar(){
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')||'[]');
+      const tipo = document.getElementById('cadTipo').value;
+      const nome = document.getElementById('cadNome').value.trim();
+      const email = document.getElementById('cadEmail').value.trim();
+      const senha = document.getElementById('cadSenha').value.trim();
+      const nascimento = document.getElementById('cadNascimento').value;
+      const ra = document.getElementById('cadMatricula').value.trim();
+
+      if(!nome || !email || !senha){ alert('Preencha todos os campos!'); return }
+      if(tipo==='aluno' && (!nascimento || !ra)){ alert('Preencha a data de nascimento e o RA!'); return }
+
+      if(usuarios.find(u=>u.email===email)){ alert('Este e-mail já está cadastrado.'); return }
+
+      if(tipo==='gestor'){
+        const codigo = document.getElementById('cadCodigoGestor').value.trim();
+        if(codigo !== CODIGO_AUTORIZACAO){ alert('Código de autorização inválido!'); return }
+      }
+
+      const novo = { tipo, nome, email, senha };
+      if(tipo==='aluno'){ novo.nascimento = nascimento; novo.ra = ra }
+
+      usuarios.push(novo);
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      alert('Cadastro realizado com sucesso!');
+      mostrarLogin();
+    }
+
+    function login(){
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')||'[]');
+      const email = document.getElementById('emailLogin').value.trim();
+      const senha = document.getElementById('senhaLogin').value.trim();
+      const tipo = document.getElementById('tipoUsuario').value;
+
+      if(!email || !senha){ alert('Preencha todos os campos!'); return }
+
+      if(tipo==='gestor'){
+        const gestor = usuarios.find(u=>u.email===email && u.tipo==='gestor');
+        if(gestor && senha===SENHA_GESTOR){
+          abrirDashboard(gestor);
+          return;
+        }
+      }
+
+      const encontrado = usuarios.find(u=> u.email===email && u.senha===senha && u.tipo===tipo);
+      if(encontrado){ abrirDashboard(encontrado); }
+      else{ alert('Usuário ou senha incorretos.'); }
+    }
+function abrirDashboard(usuario){
+  // 1. Salvar a role (tipo) do usuário no LocalStorage.
+  // Isso é o que o index.html usa para determinar as permissões.
+  localStorage.setItem('role', usuario.tipo);
+  
+  // 2. Salvar o nome do usuário (usado no cabeçalho do index.html).
+  localStorage.setItem('nomeUsuario', usuario.nome);
+
+  // 3. Redirecionar para o painel principal.
+  window.location.href = "home.html";
+}
+    
+
+    function logout(){
+      mostrarLogin();
+    }
+
+    function validarEmail(){
+      const email = document.getElementById('recEmail').value.trim();
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')||'[]');
+      const usuario = usuarios.find(u=>u.email===email);
+      if(!usuario){ alert('E-mail não encontrado!'); return }
+      emailParaReset = email;
+      mostrarNovaSenha();
+    }
+
+    function salvarNovaSenha(){
+      const nova = document.getElementById('novaSenha').value.trim();
+      if(!nova){ alert('Digite uma nova senha!'); return }
+      let usuarios = JSON.parse(localStorage.getItem('usuarios')||'[]');
+      usuarios = usuarios.map(u=>{ if(u.email===emailParaReset) u.senha = nova; return u });
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      alert('Senha redefinida com sucesso!');
+      mostrarLogin();
+    }
+
+    function atualizarDashboard(){
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')||'[]');
+      const alunos = usuarios.filter(u=>u.tipo==='aluno');
+      document.getElementById('totalAlunos').textContent = alunos.length;
+
+      const lista = document.getElementById('listaAlunos');
+      lista.innerHTML = '';
+      if(alunos.length===0){ lista.innerHTML = '<p>Nenhum aluno cadastrado.</p>'; return }
+      const ul = document.createElement('ul');
+      alunos.forEach(a=>{ const li = document.createElement('li'); li.textContent = a.nome + (a.ra ? ' — RA: '+a.ra : ''); ul.appendChild(li) });
+      lista.appendChild(ul);
+    }
+
+    function mostrarPainel(nome){
+      ['painelInicio','painelAlunos','painelMensagens','painelConfig'].forEach(id=> document.getElementById(id).style.display='none');
+      if(nome==='inicio') document.getElementById('painelInicio').style.display='block';
+      if(nome==='alunos') document.getElementById('painelAlunos').style.display='block';
+      if(nome==='mensagens') document.getElementById('painelMensagens').style.display='block';
+      if(nome==='config') document.getElementById('painelConfig').style.display='block';
+    }
+    localStorage.setItem("role", "aluno"); // ou "gestor"
+localStorage.setItem("nomeUsuario", nomeDoUsuario);
+
+
+    mostrarLogin();
+  </script>
+
+</body>
+</html>
