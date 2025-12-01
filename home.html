@@ -69,12 +69,71 @@
   cursor: pointer;
   border: 2px solid transparent;
   transition: transform .2s, border .2s;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+
 }
 
 .avatar-opcao:hover{
   transform: scale(1.08);
   border-color: #2563eb;
+
 }
+
+html, body {
+  overflow: hidden;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+}
+
+#app, .app, #dashboard {
+  height: 100vh;
+  overflow: hidden;
+}
+
+main, .conteudo, .content {
+  height: calc(100vh - 80px); /* desconta o header */
+  overflow: hidden;
+}
+
+main, .conteudo, .content {
+  margin-top: 0 !important;
+  padding-top: 10px !important;
+  align-items: flex-start;
+}
+
+#dashboard, .app {
+  align-items: flex-start;
+}
+
+main {
+  position: relative;
+  top: -20px;
+}
+
+html, body {
+  overflow: hidden !important;
+}
+
+#jogos, .jogos-container, .area-jogo {
+  overflow: hidden !important;
+  height: 100%;
+}
+
+.area-jogo * {
+  max-height: 90vh;
+  max-width: 90vw;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow: hidden !important;
+}
+
 
   </style>
 </head>
@@ -100,6 +159,11 @@
       <!-- perfil à direita -->
       <div class="ml-auto flex items-center gap-4">
         <div class="text-sm text-slate-300">Bem-vindo(a)</div>
+        <div id="tipoUsuarioTopo"
+  class="px-3 py-1 rounded-full text-xs font-bold text-white bg-gray-500">
+  Carregando...
+</div>
+
         <div id="perfilWrapper" class="relative">
           <button id="perfilToggle" class="flex items-center gap-2 bg-white/6 hover:bg-white/10 text-white px-3 py-1 rounded">
             <img id="perfilFoto" src="https://via.placeholder.com/32" alt="Perfil" class="w-8 h-8 rounded-full object-cover border-2 border-white/50"/>
@@ -249,6 +313,10 @@
         </div>
       </section>
 
+
+
+
+      
       <!-- CALENDÁRIO -->
       <section id="calendario" class="hidden h-full flex flex-col">
         <div class="mb-4 flex items-center justify-between">
@@ -519,6 +587,212 @@ document.getElementById('btnAddAviso')?.addEventListener('click', ()=>{
   renderAvisos();
 });
 
+
+/* ---------- PALAVRAS PROIBIDAS ---------- */
+const palavrasProibidas = [
+  "caralho",
+"karalho",
+"k4r4lh0",
+"k4r4lho",
+"k4ralho",
+"kar4lho",
+"karalh0",
+"kar4lh0",
+"k4ralh0",
+"merda",
+"m3rd4",
+"merd4",
+"m3rda",
+"buceta",
+"bct",
+"bucet4",
+"pau no cu",
+"burro",
+"filha da puta",
+"fdp",
+"safado",
+"safada",
+"filho da puta",
+"puta",
+"puto",
+"safadinho",
+"safadinha",
+"periquita",
+"priquito",
+"prikito",
+"priquita",
+"prikita",
+"perereca",
+"xana",
+"penis",
+"pênis",
+"pau",
+"pinto",
+"piroca",
+"sexo",
+"fuder",
+"foda",
+"transa",
+"transar",
+"boquete",
+"bqt",
+"peito",
+"seios",
+"seio",
+"teta",
+"tetas",
+"putaria",
+"maconha",
+"tráfico",
+"trafico",
+"traficar",
+"cocaína",
+"cocaina",
+"droga",
+"drogas",
+"drogado",
+"drogada",
+"traficante",
+"matar",
+"assassinar",
+"atirar",
+"morrer",
+"pornô",
+"porno",
+"punheta",
+"punhetar",
+"siririca",
+"cacete",
+"kct",
+"kacete",
+"vadia",
+"vadio",
+"vagabundo",
+"vagabunda",
+"piranha",
+"fodido",
+"quenga",
+"filho da mae",
+"filha da mae",
+"filho da mãe",
+"filha da mãe",
+"toba",
+"cu",
+"anus",
+"anûs",
+"bunda",
+"bundinha",
+"nadegas",
+"bumbum",
+"vagina",
+"macaco",
+"negrinho",
+"viado",
+"bicha",
+"bixa",
+"viadinho",
+"traveco",
+"viagra",
+"tadalafila",
+"tesão",
+"tesao",
+"excitado",
+"excitar",
+"gozar",
+"gozo",
+"gozei",
+"gozado",
+"gozada",
+"leitada",
+"semen",
+"semên",
+"dedada",
+"balofo",
+"baseado",
+"cigarro",
+"pod",
+"vape",
+"gordão",
+"gordinho",
+"adotado",
+"estupro",
+"estuprar",
+"estuprada",
+"estuprado",
+"estrupo",
+"estrupar",
+"estrupado",
+"estrupada",
+"gostosa",
+"gostoso",
+"sexy",
+"pica",
+"pika",
+"porra",
+"puta que pariu",
+"pqp",
+"trepar",
+"xoxota",
+"arrombado",
+"babaca",
+"brocha",
+"boiola",
+"cracudo",
+"corno",
+"corna",
+"canalha",
+"desgraçado",
+"desgraçada",
+"otário",
+"otario",
+"imbecil",
+"abutre",
+"prostata",
+"prostáta",
+"asqueroso",
+"bandido",
+"trouxa",
+"bastardo",
+"bichona",
+"cagão",
+"cagao",
+"cegueta",
+"carniça",
+"chifrudo",
+"chifruda",
+"escroto",
+"escrota",
+"cagar",
+"bosta",
+"mijar",
+"peido",
+"peidar",
+"capeta",
+"cretino",
+"demonio",
+"escravo",
+"incapaz",
+"infeliz",
+"ladrão",
+"ladrao",
+"magricela",
+"necrófilo",
+"pintudo",
+"pirocudo",
+"sapatona",
+  
+  "xingo",
+  "idiota"
+];
+
+function contemPalavraProibida(texto){
+  const textoMinusculo = texto.toLowerCase();
+  return palavrasProibidas.some(palavra =>
+    textoMinusculo.includes(palavra.toLowerCase())
+  );
+}
+
+
 /* ---------- FORUM ---------- */
 function renderForum(){
   const lista = document.getElementById('listaForum'); lista.innerHTML = '';
@@ -552,18 +826,30 @@ function renderForum(){
 
 document.getElementById('formForum')?.addEventListener('submit', e=>{
   e.preventDefault();
+
   const texto = document.getElementById('textoForum').value.trim();
+
   if(!texto) return;
+
+  // ✅ VERIFICA PALAVRAS PROIBIDAS
+  if(contemPalavraProibida(texto)){
+    alert("Sua mensagem contém palavras proibidas e não pode ser enviada.");
+    return;
+  }
+
   const posts = storage.forum();
   posts.push({texto});
   storage.saveForum(posts);
-  document.getElementById('textoForum').value='';
+
+  document.getElementById('textoForum').value = '';
   renderForum();
+
   setTimeout(()=>{
     const box = document.getElementById('listaForum');
     box.scrollTop = box.scrollHeight;
   },80);
 });
+
 
 /* ---------- CALENDÁRIO ---------- */
 let hoje = new Date(), mes = hoje.getMonth(), ano = hoje.getFullYear();
@@ -891,12 +1177,12 @@ function selecionarAvatar(src) {
 <p class="text-sm mt-3 mb-2 text-center">Ou escolha um avatar:</p>
 
 <div id="listaAvatares" class="grid grid-cols-5 gap-3 mb-4 justify-items-center">
-  <img src="https://i.pravatar.cc/100?img=1" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=2" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=3" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=4" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=5" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=6" class="avatar-opcao">
+  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296998/Gemini_Generated_Image_suuw93suuw93suuw_yesnse.png" class="avatar-opcao">
+  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296884/Gemini_Generated_Image_4ha114ha114ha114_ddr8lb.png" class="avatar-opcao">
+  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296788/Gemini_Generated_Image_1th42t1th42t1th4_lrv7mp.png" class="avatar-opcao">
+  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296504/Gemini_Generated_Image_d3y60bd3y60bd3y6_niuk9l.png" class="avatar-opcao">
+  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296414/Gemini_Generated_Image_37126q37126q3712_b8shn6.png" class="avatar-opcao">
+  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296269/Gemini_Generated_Image_hui2lbhui2lbhui2_tmxp33.png" class="avatar-opcao">
   <img src="https://i.pravatar.cc/100?img=7" class="avatar-opcao">
   <img src="https://i.pravatar.cc/100?img=8" class="avatar-opcao">
   <img src="https://i.pravatar.cc/100?img=9" class="avatar-opcao">
@@ -932,12 +1218,12 @@ function selecionarAvatar(src) {
     <h3 class="text-lg font-semibold mb-3 text-slate-700">Escolha seu Avatar</h3>
 
     <div class="grid grid-cols-3 gap-3">
-      <img src="https://i.pravatar.cc/150?img=12" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://i.pravatar.cc/150?img=32" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://i.pravatar.cc/150?img=45" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://i.pravatar.cc/150?img=56" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://i.pravatar.cc/150?img=3" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://i.pravatar.cc/150?img=68" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
+      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296998/Gemini_Generated_Image_suuw93suuw93suuw_yesnse.png" class="avatar-opcao onclick="selecionarAvatar(this.src)">
+      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296884/Gemini_Generated_Image_4ha114ha114ha114_ddr8lb.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
+      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296788/Gemini_Generated_Image_1th42t1th42t1th4_lrv7mp.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
+      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296504/Gemini_Generated_Image_d3y60bd3y60bd3y6_niuk9l.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
+      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296414/Gemini_Generated_Image_37126q37126q3712_b8shn6.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
+      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296269/Gemini_Generated_Image_hui2lbhui2lbhui2_tmxp33.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
     </div>
 
     <div class="mt-4 text-right">
@@ -947,6 +1233,29 @@ function selecionarAvatar(src) {
   </div>
 </div>
 
+<script>
+
+  const tipo = localStorage.getItem("role"); // CORRETO: você usa "role"
+
+  const topo = document.getElementById("tipoUsuarioTopo");
+
+  if (topo) {
+    if (tipo === "gestor") {
+      topo.textContent = "Gestor";
+      topo.style.background = "#b91c1c"; // vermelho
+    } 
+    else if (tipo === "aluno") {
+      topo.textContent = "Aluno";
+      topo.style.background = "#059669"; // verde
+    } 
+    else {
+      topo.textContent = "Desconectado";
+      topo.style.background = "#6b7280"; // cinza
+    }
+  }
+</script>
+
+</script>
 
 </body>
 </html>
