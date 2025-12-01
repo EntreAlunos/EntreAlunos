@@ -1,1348 +1,983 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Entre Alunos - Portal Estudantil</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{
-      --sidebar:#2c54a3;
-      --accent:#080808;
-      --panel:#ffffff;
-      --muted:#000000;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Memória</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #f0f0f0; /* Nova cor de fundo principal */
+            color: #333; /* Cor de texto mais escura para contraste */
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
 
-    body{
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
-      background:linear-gradient(180deg,#25478a 0%, #17305e 100%);
-    }
+        /* Estilo para todos os botões e itens clicáveis */
+        .btn, .menu-item.clickable {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+       
+        .btn:hover, .menu-item.clickable:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
 
-    header{height:64px}
-    aside{width:260px;min-width:260px;background:var(--sidebar);}
+        .back-button, .exit-button {
+            padding: 10px 20px;
+            background-color: #b0b0b0; /* Tom de cinza escuro */
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
 
-    /* calendario boxes */
-    #calendarioGrid > div{
-      min-height:86px;
-      padding:12px;
-      border-radius:12px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease;
-      cursor:pointer;
-      position:relative;
-    }
-    #calendarioGrid > div:hover{ transform: translateY(-6px); box-shadow: 0 12px 30px rgb(14, 35, 128); }
-    .dia-num{ font-weight:700; color:#1d2c4e; }
-    .dia-evento-badge{ background:#bbf7d0; color:#065f46; padding:4px 8px; border-radius:999px; font-size:12px; display:inline-block }
-    .hoje{ border:3px solid #0ea5e9; }
+        .back-button:hover, .exit-button:hover {
+            background-color: #a0a0a0;
+        }
+       
+        .exit-button {
+            margin-right: 10px;
+        }
 
-    /* tooltip */
-    .tooltiptext{ visibility:hidden; position:absolute; top:10px; right:10px; background:rgb(30, 67, 235); color:#ffffff; padding:8px; border-radius:8px; font-size:12px; z-index:40; box-shadow:0 8px 24px rgba(2,6,23,0.3); max-width:240px; text-align:left;}
-    .tooltip:hover .tooltiptext{ visibility:visible; }
+        .back-button-top {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
 
-    /* scrollbar forum */
-    #listaForum::-webkit-scrollbar{ width:8px }
-    #listaForum::-webkit-scrollbar-thumb{ background:rgb(21, 45, 152); border-radius:6px }
+        @media (max-width: 480px) {
+            .back-button, .exit-button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
 
-    /* responsive: hide sidebar under 920 */
-    @media (max-width:920px){ aside{display:none;} main{padding:16px;} }
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            color: #555; /* Tom de cinza escuro para o título */
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-    /* --- Sidebar submenu estilo "Twitter" --- */
-    .sidebar-btn { width:100%; display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px; }
-    .sidebar-btn:hover{ background:rgba(255,255,255,0.06); cursor:pointer; }
-    .sidebar-btn.active{ background:rgba(255,255,255,0.08); }
-    .submenu { margin-left:34px; margin-top:6px; display:none; flex-direction:column; gap:6px; }
-    .submenu .subitem { padding:8px 12px; border-radius:8px; font-size:14px; text-align:left; }
-    .submenu .subitem:hover{ background:rgba(0,0,0,0.05); cursor:pointer; }
-    .sidebar .subitem.active { background:rgba(0,0,0,0.08); font-weight:600; }
+        #menu, #jogo {
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
 
-    /* small visual tweak so iframe fills nice area */
-    .fill-iframe { width:100%; height:100%; border:0; }
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px; /* Aumentado para um visual mais moderno */
+            margin: 6px 0;
+            font-size: 0.85em;
+            cursor: default;
+            border: none;
+            border-radius: 8px; /* Bordas mais arredondadas */
+            background-color: #e0e0e0; /* Fundo do item de menu mais escuro */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+       
+        .menu-item .label {
+            font-weight: 500;
+            color: #777;
+        }
+       
+        .menu-item .value {
+            font-weight: bold;
+            color: #444;
+            flex-grow: 1;
+            margin: 0 10px;
+        }
 
-    .avatar-opcao{
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  object-fit: cover;
+        .menu-item .arrow-btn {
+            background-color: #999; /* Tom de cinza para as setas */
+            border: none;
+            color: #fff;
+            font-size: 0.9em;
+            padding: 4px 8px; /* Aumentado para melhor toque */
+            border-radius: 6px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+       
+        .menu-item .arrow-btn:hover {
+            background-color: #777;
+            transform: translateY(-1px);
+        }
+
+        #iniciar-jogo {
+            font-family: 'Montserrat', sans-serif; /* Mesma fonte do título */
+            font-weight: 700;
+            text-transform: uppercase;
+            width: 100%;
+            padding: 12px; /* Mais preenchimento para parecer maior */
+            margin-top: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            background-color: #007bff; /* Cor de destaque moderna e vibrante */
+            color: #fff;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #iniciar-jogo:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+       
+        #game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #555;
+        }
+
+        #game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Para lidar com telas menores */
+            gap: 10px;
+        }
+       
+        #placar-e-tempo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #placar, #cronometro {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap; /* Evita quebra de linha */
+        }
+       
+        #turno-jogador {
+            font-style: italic;
+            color: #888;
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 4px;
+            margin-top: 20px;
+        }
+        .card {
+            background-color: #555; /* Cor da parte de trás das cartas */
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .card.virada {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-back {
+            background-color: #555;
+            border-radius: 10px;
+        }
+        .card-front {
+            transform: rotateY(180deg);
+            border-radius: 10px;
+        }
+        .card-symbol {
+            font-size: 1.2em;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        /* Estilos de cores para daltônicos (mantidos) */
+        .cor-0 { background-color: #ff0000; }
+        .cor-1 { background-color: #00ff00; }
+        .cor-2 { background-color: #0000ff; }
+        .cor-3 { background-color: #ffff00; }
+        .cor-4 { background-color: #800080; }
+        .cor-5 { background-color: #00ffff; }
+        .cor-6 { background-color: #ffa500; }
+        .cor-7 { background-color: #ff00ff; }
+        .cor-8 { background-color: #c0c0c0; }
+        .cor-9 { background-color: #800000; }
+        .cor-10 { background-color: #808000; }
+        .cor-11 { background-color: #008000; }
+        .cor-12 { background-color: #008080; }
+        .cor-13 { background-color: #000080; }
+        .cor-14 { background-color: #808080; }
+        .cor-15 { background-color: #ff4500; }
+        .cor-16 { background-color: #4b0082; }
+        .cor-17 { background-color: #f5f5dc; }
+       
+        .protanopia .cor-0 { background-color: #f06464; }
+        .protanopia .cor-1 { background-color: #64f064; }
+        .protanopia .cor-2 { background-color: #6464f0; }
+        .protanopia .cor-3 { background-color: #f0f064; }
+        .protanopia .cor-4 { background-color: #960096; }
+        .protanopia .cor-5 { background-color: #64f0f0; }
+        .protanopia .cor-6 { background-color: #f0aa00; }
+        .protanopia .cor-7 { background-color: #f000f0; }
+        .protanopia .cor-8 { background-color: #b0b0b0; }
+        .protanopia .cor-9 { background-color: #700000; }
+        .protanopia .cor-10 { background-color: #707000; }
+        .protanopia .cor-11 { background-color: #007000; }
+        .protanopia .cor-12 { background-color: #007070; }
+        .protanopia .cor-13 { background-color: #000070; }
+        .protanopia .cor-14 { background-color: #707070; }
+        .protanopia .cor-15 { background-color: #f04000; }
+        .protanopia .cor-16 { background-color: #3b0072; }
+        .protanopia .cor-17 { background-color: #e5e5c0; }
+       
+        .deuteranopia .cor-0 { background-color: #f06464; }
+        .deuteranopia .cor-1 { background-color: #64f064; }
+        .deuteranopia .cor-2 { background-color: #6464f0; }
+        .deuteranopia .cor-3 { background-color: #f0f064; }
+        .deuteranopia .cor-4 { background-color: #960096; }
+        .deuteranopia .cor-5 { background-color: #64f0f0; }
+        .deuteranopia .cor-6 { background-color: #f0aa00; }
+        .deuteranopia .cor-7 { background-color: #f000f0; }
+        .deuteranopia .cor-8 { background-color: #b0b0b0; }
+        .deuteranopia .cor-9 { background-color: #700000; }
+        .deuteranopia .cor-10 { background-color: #707000; }
+        .deuteranopia .cor-11 { background-color: #007000; }
+        .deuteranopia .cor-12 { background-color: #007070; }
+        .deuteranopia .cor-13 { background-color: #000070; }
+        .deuteranopia .cor-14 { background-color: #707070; }
+        .deuteranopia .cor-15 { background-color: #f04000; }
+        .deuteranopia .cor-16 { background-color: #3b0072; }
+        .deuteranopia .cor-17 { background-color: #e5e5c0; }
+       
+        .tritanopia .cor-0 { background-color: #f06464; }
+        .tritanopia .cor-1 { background-color: #64f064; }
+        .tritanopia .cor-2 { background-color: #6464f0; }
+        .tritanopia .cor-3 { background-color: #f0f064; }
+        .tritanopia .cor-4 { background-color: #960096; }
+        .tritanopia .cor-5 { background-color: #64f0f0; }
+        .tritanopia .cor-6 { background-color: #f0aa00; }
+        .tritanopia .cor-7 { background-color: #f000f0; }
+        .tritanopia .cor-8 { background-color: #b0b0b0; }
+        .tritanopia .cor-9 { background-color: #700000; }
+        .tritanopia .cor-10 { background-color: #707000; }
+        .tritanopia .cor-11 { background-color: #007000; }
+        .tritanopia .cor-12 { background-color: #007070; }
+        .tritanopia .cor-13 { background-color: #000070; }
+        .tritanopia .cor-14 { background-color: #707070; }
+        .tritanopia .cor-15 { background-color: #f04000; }
+        .tritanopia .cor-16 { background-color: #3b0072; }
+        .tritanopia .cor-17 { background-color: #e5e5c0; }
+
+        .symbol-dalt .cor-0 { color: #f06464; }
+        .symbol-dalt .cor-1 { color: #64f064; }
+        .symbol-dalt .cor-2 { color: #6464f0; }
+        .symbol-dalt .cor-3 { color: #f0f064; }
+        .symbol-dalt .cor-4 { color: #960096; }
+        .symbol-dalt .cor-5 { color: #64f0f0; }
+        .symbol-dalt .cor-6 { color: #f0aa00; }
+        .symbol-dalt .cor-7 { color: #f000f0; }
+       
+        #fim-de-jogo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            display: none;
+        }
+        /* === Modal de Ranking === */
+/* === MODAL DE RANKING (ESTILO SIMON) === */
+/* === MODAL DE RANKING (ABA FLUTUANTE) === */
+#ranking-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+#ranking-box {
+  background: linear-gradient(135deg, #00c6ff, #0072ff, #ff00c8, #ff9900);
+  background-size: 400% 400%;
+  border-radius: 25px;
+  padding: 25px 20px;
+  width: 80%;
+  max-width: 300px;
+  text-align: center;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+  transform: scale(0.7);
+  animation: popup 0.4s ease forwards, gradientMove 6s ease infinite;
+}
+
+@keyframes popup {
+  to { transform: scale(1); }
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+#ranking-box h3 {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(255,255,255,0.8);
+}
+
+#ranking-list {
+  max-height: 250px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+#ranking-list p {
+  margin: 8px 0;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255,255,255,0.1);
+  transition: 0.2s;
+}
+
+#ranking-list p:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.03);
+}
+
+#ranking-fechar {
+  background: white;
+  color: #0072ff;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 32px;
+  font-size: 1em;
+  font-weight: bold;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: transform .2s, border .2s;
-
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-
+  transition: 0.3s;
+  box-shadow: 0 4px 12px rgba(255,255,255,0.4);
 }
 
-.avatar-opcao:hover{
+#ranking-fechar:hover {
+  background: #0072ff;
+  color: white;
   transform: scale(1.08);
-  border-color: #2563eb;
-
+}
+#ver-ranking {
+    margin-top: 20px;         /* Espaço entre os botões */
+    font-size: 1em;         /* Mesmo tamanho do botão INICIAR */
+    padding: 12px;            /* Deixa grande e fácil de clicar */
+    background-color: #28a745; /* Cor verde para diferenciar */
+    color: white;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-html, body {
-  overflow: hidden;
+#ver-ranking:hover {
+    background-color: #218838;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
-html, body {
-  height: 100%;
-  overflow: hidden;
-  margin: 0;
-}
+        #fim-de-jogo h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3em;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        #fim-de-jogo p {
+            color: #fff;
+            font-size: 1.5em;
+        }
 
-#app, .app, #dashboard {
-  height: 100vh;
-  overflow: hidden;
-}
-
-main, .conteudo, .content {
-  height: calc(100vh - 80px); /* desconta o header */
-  overflow: hidden;
-}
-
-main, .conteudo, .content {
-  margin-top: 0 !important;
-  padding-top: 10px !important;
-  align-items: flex-start;
-}
-
-#dashboard, .app {
-  align-items: flex-start;
-}
-
-main {
-  position: relative;
-  top: -20px;
-}
-
-html, body {
-  overflow: hidden !important;
-}
-
-#jogos, .jogos-container, .area-jogo {
-  overflow: hidden !important;
-  height: 100%;
-}
-
-.area-jogo * {
-  max-height: 90vh;
-  max-width: 90vw;
-  box-sizing: border-box;
-}
-
-html, body {
-  overflow: hidden !important;
-}
-
-  </style>
+        #voltar-menu {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 20px;
+            font-size: 1.3em;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            background-color: #007bff;
+            color: #fff;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+       
+        #voltar-menu:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+    </style>
 </head>
+<body>
+    <div id="menu">
+       
+        <h1>Jogo da Memória</h1>
+        <div class="menu-item clickable" onclick="alternarModoDeJogo()">
+            <span class="label">Jogadores:</span>
+            <span class="value" id="modo-de-jogo">Um Jogador</span>
+        </div>
+        <div class="menu-item">
+            <span class="label">Nível:</span>
+            <button class="arrow-btn btn" onclick="mudarDificuldade(-1)">&lt;</button>
+            <span class="value" id="nivel">Fácil (4x4)</span>
+            <button class="arrow-btn btn" onclick="mudarDificuldade(1)">&gt;</button>
+        </div>
+        <div class="menu-item">
+            <span class="label">Cores:</span>
+            <button class="arrow-btn btn" onclick="mudarModoDaltonismo(-1)">&lt;</button>
+            <span class="value" id="modo-daltonismo">Normal</span>
+            <button class="arrow-btn btn" onclick="mudarModoDaltonismo(1)">&gt;</button>
+        </div>
+        <div class="menu-item clickable" onclick="alternarModoSimbolos()">
+            <span class="label">Modo:</span>
+            <span class="value" id="modo-simbolos">Cores</span>
+        </div>
+        <button id="iniciar-jogo" class="btn" onclick="iniciarJogo()">INICIAR</button>
+    </div>
+<button id="ver-ranking" class="btn" onclick="mostrarRanking()">Ver Ranking</button>
 
-<body class="min-h-screen text-slate-100">
 
-  <script>
-    // redireciona para login se não estiver logado (mantive comportamento original)
-    let role = localStorage.getItem('role');
-    if(!role){ /* não redireciono automaticamente para facilitar testes locais; se quiser ativar, descomente abaixo */
-      // location.href = 'login.html';
-    }
-  </script>
 
-  <!-- HEADER -->
-  <header class="sticky top-0 z-40 bg-[rgba(255,255,255,0.04)] backdrop-blur border-b border-white/5">
-    <div class="max-w-[1400px] mx-auto px-6 flex items-center h-16 gap-4">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 bg-white rounded-md flex items-center justify-center text-slate-900 font-bold shadow">EA</div>
-        <div class="text-white text-lg font-semibold">Entre Alunos</div>
-      </div>
+    <div id="jogo" style="display:none;">
+        <div id="game-header">
+          
+            <div id="placar-e-tempo">
+                <span id="placar">Pares Encontrados: 0</span>
+                <span id="cronometro">Tempo: 00:00</span>
+            </div>
+        </div>
+        <div id="game-info">
+            <span id="turno-jogador"></span>
+            <span id="placar-jogadores"></span>
+        </div>
+        <div class="card-grid" id="card-grid"></div>
+    </div>
 
-      <!-- perfil à direita -->
-      <div class="ml-auto flex items-center gap-4">
-        <div class="text-sm text-slate-300">Bem-vindo(a)</div>
-        <div id="tipoUsuarioTopo"
-  class="px-3 py-1 rounded-full text-xs font-bold text-white bg-gray-500">
-  Carregando...
+    <div id="fim-de-jogo">
+        <h2>Fim de Jogo</h2>
+        <p id="mensagem-final"></p>
+        <a href="home.html" id="voltar-menu" class="btn">Voltar ao Menu</a>
+    </div>
+<div id="ranking-container" style="display:none; text-align:center; margin-top:30px;">
+  <div id="ranking"></div>
 </div>
-
-        <div id="perfilWrapper" class="relative">
-          <button id="perfilToggle" class="flex items-center gap-2 bg-white/6 hover:bg-white/10 text-white px-3 py-1 rounded">
-            <img id="perfilFoto" src="https://via.placeholder.com/32" alt="Perfil" class="w-8 h-8 rounded-full object-cover border-2 border-white/50"/>
-            <span id="perfilNomeHeader" class="text-sm">Usuário</span>
-          </button>
-
-         <div id="perfilDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl text-slate-800 p-4 z-50">
-
-  <div class="flex items-center gap-3 border-b pb-3">
-    <img id="perfilFotoDropdown" src="https://via.placeholder.com/48"
-      class="w-12 h-12 rounded-full border object-cover">
-
-    <div>
-      <div id="perfilNome" class="font-semibold"></div>
-      <div id="perfilTipo" class="text-xs text-slate-500"></div>
-    </div>
+<!-- Modal flutuante do ranking -->
+<div id="ranking-modal" style="display: none;">
+  <div id="ranking-box">
+    <h3 id="ranking-titulo">🏆 Ranking Local</h3>
+    <div id="ranking-list"></div>
+    <button id="ranking-fechar" onclick="fecharRanking()">Voltar ao Menu</button>
   </div>
-
-  <div class="mt-3 text-sm space-y-1">
-    <div>📧 <span id="perfilEmail">email@escola.com</span></div>
-    <div>🎓 Curso: <span id="perfilCurso">Informática</span></div>
-    <div>🏫 Turma: <span id="perfilTurma">2º Ano</span></div>
-  </div>
-
-  <div class="grid grid-cols-3 gap-2 text-center text-xs mt-4">
-    <div class="bg-slate-100 p-2 rounded">
-      <strong id="perfilVotos">0</strong>
-      <div>Votos</div>
-    </div>
-    <div class="bg-slate-100 p-2 rounded">
-      <strong id="perfilPosts">0</strong>
-      <div>Posts</div>
-    </div>
-    <div class="bg-slate-100 p-2 rounded">
-      <strong id="perfilJogos">0</strong>
-      <div>Jogos</div>
-    </div>
-  </div>
-
-  <div class="flex gap-2 mt-4">
-  <button onclick="abrirEditarPerfil()"
-    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm">
-    Editar
-  </button>
-
-  <button onclick="abrirModalAvatar()"
-    class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded text-sm">
-    Trocar Foto
-  </button>
-
-  <button onclick="logout()"
-    class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded text-sm">
-    Sair
-  </button>
 </div>
 
 
-</div>
 
-        </div>
-      </div>
+    <script>
+        const cardGrid = document.getElementById('card-grid');
+        const placarJogadores = document.getElementById('placar-jogadores');
+        const turnoJogador = document.getElementById('turno-jogador');
+        const placarUnico = document.getElementById('placar');
+        const fimDeJogoDiv = document.getElementById('fim-de-jogo');
+        const mensagemFinal = document.getElementById('mensagem-final');
+        const menuDiv = document.getElementById('menu');
+        const jogoDiv = document.getElementById('jogo');
+        const cronometroElement = document.getElementById('cronometro');
+        const exitGameBtn = document.getElementById('exit-game-btn');
+        const backToMenuBtn = document.querySelector('.back-button');
 
-    </div>
-  </header>
+        let timer;
+        let segundos = 0;
 
-  <div class="max-w-[1400px] mx-auto flex gap-6 px-6 py-6">
-    <!-- SIDEBAR -->
-    <aside class="flex flex-col p-6 rounded-xl shadow-lg text-white sidebar">
-      <nav class="flex flex-col gap-2">
-        <div id="btnAvisos" class="sidebar-btn" onclick="handleSidebarClick('avisos')">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-          <span class="font-medium">Mural de Avisos</span>
-        </div>
+        const niveis = {
+            1: { nome: 'Fácil (4x4)', cols: 4, rows: 4 },
+            2: { nome: 'Médio (4x5)', cols: 4, rows: 5 },
+            3: { nome: 'Difícil (5x6)', cols: 5, rows: 6 },
+            4: { nome: 'Muito Difícil (6x6)', cols: 6, rows: 6 }
+        };
 
-        <div id="btnForum" class="sidebar-btn" onclick="handleSidebarClick('forum')">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12v5a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          <span class="font-medium">Fórum</span>
-        </div>
+        const paletas = {
+            'Normal': ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#800080', '#00ffff', '#ffa500', '#ff00ff',
+                       '#c0c0c0', '#800000', '#808000', '#008000', '#008080', '#000080', '#808080', '#ff4500',
+                       '#4b0082', '#f5f5dc'],
+            'Protanopia': ['#f06464', '#64f064', '#6464f0', '#f0f064', '#960096', '#64f0f0', '#f0aa00', '#f000f0',
+                            '#b0b0b0', '#700000', '#707000', '#007000', '#007070', '#000070', '#707070', '#f04000',
+                            '#3b0072', '#e5e5c0'],
+            'Deuteranopia': ['#f06464', '#64f064', '#6464f0', '#f0f064', '#960096', '#64f0f0', '#f0aa00', '#f000f0',
+                              '#b0b0b0', '#700000', '#707000', '#007000', '#007070', '#000070', '#707070', '#f04000',
+                              '#3b0072', '#e5e5c0'],
+            'Tritanopia': ['#f06464', '#64f064', '#6464f0', '#f0f064', '#960096', '#64f0f0', '#f0aa00', '#f000f0',
+                            '#b0b0b0', '#700000', '#707000', '#007000', '#007070', '#000070', '#707070', '#f04000',
+                            '#3b0072', '#e5e5c0']
+        };
 
-        <div id="btnCalendario" class="sidebar-btn" onclick="handleSidebarClick('calendario')">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          <span class="font-medium">Calendário</span>
-        </div>
+        const simbolos = ['★', '♥', '♦', '♠', '♣', '♦', '▲', '●', '■', '◎', '◈', '◇', '⌘', '⌫', '⌥', '⎋', '⍟', '⚙'];
 
-        <!-- CHAPAS com submenu estilo moderno -->
-        <div id="btnChapas" class="sidebar-btn" onclick="toggleChapasMenu()">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 7v10a2 2 0 002 2h10a2 2 0 002-2V7M9 7v10M15 7v10"/></svg>
-          <span class="font-medium">Chapas</span>
-        </div>
+        let cartas = [];
+        let cartasViradas = [];
+        let paresEncontrados = 0;
+        let nivelAtual = 1;
+        let modoDaltonismo = 'Normal';
+        let modoSimbolos = false;
+        let modoDeJogo = 'um_jogador';
+        let jogadorAtual = 1;
+        let pontuacao = { 1: 0, 2: 0 };
 
-        <div id="chapasSubmenu" class="submenu">
-          <div id="subPropostas" class="subitem" onclick="handleSidebarClick('chapas')">Propostas das Chapas</div>
-          <div id="subVotacao" class="subitem" onclick="handleSidebarClick('votacao')">🗳️ Votação</div>
-        </div>
+        function mudarDificuldade(direcao) {
+            nivelAtual = Math.min(Math.max(1, nivelAtual + direcao), 4);
+            document.getElementById('nivel').innerText = niveis[nivelAtual].nome;
+        }
 
-        <div id="btnJogos" class="sidebar-btn" onclick="handleSidebarClick('jogos')">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75L5.25 6v12l4.5-3.75M14.25 9.75L18.75 6v12l-4.5-3.75"/></svg>
-          <span class="font-medium">Jogos</span>
-        </div>
-      </nav>
+        function mudarModoDaltonismo(direcao) {
+            const modos = Object.keys(paletas);
+            let index = modos.indexOf(modoDaltonismo);
+            index = (index + direcao + modos.length) % modos.length;
+            modoDaltonismo = modos[index];
+            document.getElementById('modo-daltonismo').innerText = modoDaltonismo;
+        }
+       
+        function alternarModoDeJogo() {
+            modoDeJogo = modoDeJogo === 'um_jogador' ? 'dois_jogadores' : 'um_jogador';
+            document.getElementById('modo-de-jogo').innerText = modoDeJogo === 'um_jogador' ? 'Um Jogador' : 'Dois Jogadores';
+        }
 
-      <div class="mt-auto">
-        <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Sair</button>
-      </div>
-    </aside>
+        function alternarModoSimbolos() {
+            modoSimbolos = !modoSimbolos;
+            document.getElementById('modo-simbolos').innerText = modoSimbolos ? 'Símbolos' : 'Cores';
+        }
 
-    <!-- MAIN -->
-    <main class="flex-1 overflow-hidden">
+        function iniciarCronometro() {
+            segundos = 0;
+            cronometroElement.innerText = 'Tempo: 00:00';
+            timer = setInterval(() => {
+                segundos++;
+                let minutos = Math.floor(segundos / 60);
+                let segundosRestantes = segundos % 60;
+                cronometroElement.innerText = `Tempo: ${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
 
-      <!-- AVISOS -->
-      <section id="avisos" class="hidden h-full flex flex-col">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-white">Mural de Avisos</h2>
-        </div>
+        function pararCronometro() {
+            clearInterval(timer);
+        }
 
-        <div class="flex gap-6 h-full">
-          <div class="flex-1 bg-[var(--panel)] rounded-xl p-5 shadow h-[calc(100vh-64px-48px)] overflow-hidden flex flex-col">
-            <div id="formAviso" class="mb-4 hidden">
-              <div class="flex gap-3">
-                <input id="textoAviso" type="text" placeholder="Escreva um aviso..." class="flex-1 border rounded px-3 py-2 focus:outline-none text-slate-900"/>
-                <button id="btnAddAviso" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Adicionar</button>
-              </div>
-            </div>
+        function iniciarJogo() {
+            menuDiv.style.display = 'none';
+            jogoDiv.style.display = 'block';
+           
+            if (modoDeJogo === 'dois_jogadores') {
+                placarUnico.style.display = 'none';
+                placarJogadores.style.display = 'block';
+                turnoJogador.style.display = 'block';
+                cronometroElement.style.display = 'none'; // Cronômetro desativado para 2 jogadores
+                jogadorAtual = 1;
+                pontuacao = { 1: 0, 2: 0 };
+                atualizarPlacar();
+                atualizarTurno();
+            } else {
+                placarUnico.style.display = 'block';
+                placarJogadores.style.display = 'none';
+                turnoJogador.style.display = 'none';
+                cronometroElement.style.display = 'block';
+                placarUnico.innerText = `Pares Encontrados: 0`;
+                iniciarCronometro();
+            }
 
-            <div id="listaAvisos" class="space-y-3 overflow-y-auto pr-2">
-              <!-- avisos -->
-            </div>
-          </div>
-        </div>
-      </section>
+            montarTabuleiro();
+        }
 
-      <!-- FORUM -->
-      <section id="forum" class="hidden h-full flex flex-col">
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold text-white">Fórum</h2>
-        </div>
+        function atualizarPlacar() {
+            if (modoDeJogo === 'dois_jogadores') {
+                placarJogadores.innerText = `Jogador 1: ${pontuacao[1]} | Jogador 2: ${pontuacao[2]}`;
+            } else {
+                placarUnico.innerText = `Pares Encontrados: ${paresEncontrados}`;
+            }
+        }
+       
+        function atualizarTurno() {
+            if (modoDeJogo === 'dois_jogadores') {
+                turnoJogador.innerText = `Vez do Jogador ${jogadorAtual}`;
+            }
+        }
 
-        <div class="bg-[var(--panel)] rounded-xl p-5 shadow h-[calc(100vh-64px-48px)] flex flex-col">
-          <div id="listaForum" class="flex-1 overflow-y-auto space-y-4 pb-4">
-            <!-- posts -->
-          </div>
+        function resetarEstadoJogo() {
+            cartas = [];
+            cartasViradas = [];
+            paresEncontrados = 0;
+            cardGrid.innerHTML = '';
+            pararCronometro();
+        }
 
-          <form id="formForum" class="mt-4 flex gap-3 items-center">
-            <input id="textoForum" type="text" placeholder="Escreva algo para o fórum..." class="flex-1 border rounded-l px-4 py-3 focus:outline-none text-slate-900"/>
-            <button class="bg-green-600 text-white px-4 py-3 rounded-r" type="submit">Enviar</button>
-          </form>
-        </div>
-      </section>
+        function voltarAoMenu() {
+            resetarEstadoJogo();
+            jogoDiv.style.display = 'none';
+            menuDiv.style.display = 'block';
+        }
 
+        function reiniciarJogo() {
+            resetarEstadoJogo();
+            fimDeJogoDiv.style.display = 'none';
+            menuDiv.style.display = 'block';
+        }
 
+        function montarTabuleiro() {
+            const { cols, rows } = niveis[nivelAtual];
+            const numCartas = cols * rows;
+            const numPares = numCartas / 2;
+           
+            let valores = [];
+            if (modoSimbolos) {
+                valores = simbolos.slice(0, numPares);
+            } else {
+                valores = paletas[modoDaltonismo].slice(0, numPares);
+            }
+           
+            let valoresDuplicados = [...valores, ...valores];
+            valoresDuplicados.sort(() => Math.random() - 0.5);
 
+            cardGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            cardGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+           
+            cartas = valoresDuplicados.map((valor) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.valor = valor;
+               
+                const cardFront = document.createElement('div');
+                cardFront.classList.add('card-face', 'card-front');
+               
+                if (modoSimbolos) {
+                    const cardSymbol = document.createElement('span');
+                    cardSymbol.classList.add('card-symbol');
+                    cardSymbol.innerText = valor;
+                    cardFront.appendChild(cardSymbol);
+                } else {
+                    cardFront.style.backgroundColor = valor;
+                }
 
-      
-      <!-- CALENDÁRIO -->
-      <section id="calendario" class="hidden h-full flex flex-col">
-        <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-white">Calendário</h2>
-          <div class="flex items-center gap-3">
-            <button onclick="mudarMes(-1)" class="bg-white/6 text-white px-3 py-1 rounded hover:bg-white/10">◀</button>
-            <div id="mesAtual" class="text-white font-medium"></div>
-            <button onclick="mudarMes(1)" class="bg-white/6 text-white px-3 py-1 rounded hover:bg-white/10">▶</button>
-          </div>
-        </div>
+                const cardBack = document.createElement('div');
+                cardBack.classList.add('card-face', 'card-back');
+               
+                card.appendChild(cardFront);
+                card.appendChild(cardBack);
+               
+                card.addEventListener('click', () => virarCarta(card));
+                cardGrid.appendChild(card);
 
-        <div class="bg-[var(--panel)] rounded-xl p-5 shadow flex flex-col gap-4 h-[calc(100vh-64px-48px)]">
-          <div class="grid grid-cols-7 gap-2 text-sm font-medium text-slate-600">
-            <div class="text-center">Dom</div><div class="text-center">Seg</div><div class="text-center">Ter</div><div class="text-center">Qua</div>
-            <div class="text-center">Qui</div><div class="text-center">Sex</div><div class="text-center">Sáb</div>
-          </div>
+                return { elemento: card, valor: valor, encontrada: false };
+            });
 
-          <div id="calendarioGrid" class="grid grid-cols-7 gap-4 flex-1 overflow-y-auto"></div>
+            const cardWidth = cardGrid.offsetWidth / cols - 6;
+            cartas.forEach(c => {
+                c.elemento.style.width = `${cardWidth}px`;
+                c.elemento.style.height = `${cardWidth}px`;
+            });
 
-          <form id="formEvento" class="hidden flex gap-2 items-center">
-            <input id="dataEvento" type="date" class="border rounded px-3 py-2 text-slate-900"/>
-            <input id="descEvento" type="text" placeholder="Descrição do evento" class="flex-1 border rounded px-3 py-2 text-slate-900"/>
-            <button class="bg-[var(--accent)] text-white px-4 py-2 rounded">Adicionar</button>
-          </form>
+            document.body.className = '';
+            if (!modoSimbolos && modoDaltonismo !== 'Normal') {
+                document.body.classList.add(modoDaltonismo.toLowerCase());
+            }
+        }
 
-          <div>
-            <ul id="listaEventos" class="space-y-2 max-h-40 overflow-y-auto"></ul>
-          </div>
-        </div>
-      </section>
+        function virarCarta(card) {
+            if (card.classList.contains('virada') || cartasViradas.length === 2) {
+                return;
+            }
 
-      <!-- CHAPAS (com submenu "Propostas") -->
-      <section id="chapas" class="hidden h-full flex flex-col">
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold text-white">Chapas e Propostas</h2>
-        </div>
+            card.classList.add('virada');
+            cartasViradas.push(card);
 
-        <div class="bg-[var(--panel)] rounded-xl p-5 shadow h-[calc(100vh-64px-48px)] overflow-auto">
-          <form id="formChapa" class="hidden flex flex-col gap-3 mb-4">
-            <input id="nomeChapa" type="text" placeholder="Nome da chapa" class="border rounded px-3 py-2 text-slate-900"/>
-            <textarea id="propostaChapa" placeholder="Proposta da chapa" class="border rounded px-3 py-2 h-28 resize-none text-slate-900"></textarea>
-            <input id="integrantesChapa" type="text" placeholder="Integrantes (separados por vírgula)" class="border rounded px-3 py-2 text-slate-900"/>
-            <input id="imagemChapa" type="file" accept="image/*"/>
-            <div>
-              <button class="bg-[var(--accent)] text-white px-4 py-2 rounded">Adicionar Chapa</button>
-            </div>
-          </form>
+            if (cartasViradas.length === 2) {
+                setTimeout(checarPar, 1000);
+            }
+        }
 
-          <ul id="listaChapas" class="space-y-3"></ul>
-        </div>
-      </section>
+        function checarPar() {
+            const [card1, card2] = cartasViradas;
+           
+            if (card1.dataset.valor === card2.dataset.valor) {
+                card1.style.opacity = 0.5;
+                card2.style.opacity = 0.5;
+                card1.style.cursor = 'default';
+                card2.style.cursor = 'default';
+               
+                if (modoDeJogo === 'dois_jogadores') {
+                    pontuacao[jogadorAtual]++;
+                }
+                paresEncontrados++;
+                atualizarPlacar();
+               
+                if (paresEncontrados === cartas.length / 2) {
+                    pararCronometro();
+                    setTimeout(() => anunciarFimDeJogo(), 500);
+                }
+            } else {
+                card1.classList.remove('virada');
+                card2.classList.remove('virada');
+               
+                if (modoDeJogo === 'dois_jogadores') {
+                    jogadorAtual = jogadorAtual === 1 ? 2 : 1;
+                    atualizarTurno();
+                }
+            }
+           
+            cartasViradas = [];
+        }
 
-      <!-- VOTAÇÃO -->
-      <section id="votacao" class="hidden h-full flex flex-col">
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold text-white">Votação Grêmio Estudantil</h2>
-        </div>
+        function anunciarFimDeJogo() {
+            let mensagem = '';
+            if (modoDeJogo === 'um_jogador') {
+  const nome = prompt("Digite seu nome para o ranking:");
+  if (nome) {
+    salvarPontuacao(nome, segundos);
+    setTimeout(() => mostrarRanking(), 1000);
+  }
+}
+            if (modoDeJogo === 'dois_jogadores') {
+                if (pontuacao[1] > pontuacao[2]) {
+                    mensagem = `Parabéns, Jogador 1! Você venceu!`;
+                } else if (pontuacao[2] > pontuacao[1]) {
+                    mensagem = `Parabéns, Jogador 2! Você venceu!`;
+                } else {
+                    mensagem = `O jogo terminou em um empate!`;
+                }
+            } else {
+                let minutos = Math.floor(segundos / 60);
+                let segundosRestantes = segundos % 60;
+                mensagem = `Parabéns! Você completou o jogo em ${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}.`;
+            }
+           
+            document.getElementById('fim-de-jogo').getElementsByTagName('h2')[0].innerText = "Fim de Jogo";
+            mensagemFinal.innerText = mensagem;
+            // Marca para mostrar feedback no index
 
-        <div class="bg-[var(--panel)] rounded-xl p-5 shadow h-[calc(100vh-64px-48px)] overflow-auto">
-          <iframe src="votacao.html" class="w-full h-full border-0 fill-iframe" frameborder="0"></iframe>
-        </div>
-      </section>
+            if (!localStorage.getItem("feedbackRespondido")) {
+    localStorage.setItem("feedbackRespondido", "true");
+    window.location.href = "https://docs.google.com/forms/d/e/SEU_FORM_ID/viewform";
+}
+            // Mostra a tela de fim de jogo
+fimDeJogoDiv.style.display = 'flex';
 
-      <!-- JOGOS -->
-      <section id="jogos" class="hidden h-full flex flex-col">
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold text-white">Jogos</h2>
-        </div>
+// --- SALVA NO RANKING APENAS NO MODO UM JOGADOR ---
+        }
+        // ===== SISTEMA DE RANKING LOCAL =====
 
-        <div class="bg-[var(--panel)] rounded-xl p-5 shadow h-[calc(100vh-64px-48px)] flex flex-col gap-4">
-          <div class="flex gap-3">
-            <button onclick="abrirJogo('jogomemoria.html')" class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">
-  Jogo da Memória
-</button>
+// Salva uma nova pontuação no localStorage
+// ===== SISTEMA DE RANKING LOCAL CORRIGIDO =====
 
-<button onclick="abrirJogo('jogosimon.html')" class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
-  Jogo do Simon
-</button>
+// Salva uma nova pontuação no localStorage
+function salvarPontuacao(nome, tempo) {
+  const nivelNome = niveis[nivelAtual].nome.split(' ')[0]; // "Fácil", "Médio", etc.
+  const tipoCor = modoDaltonismo; // "Normal", "Protanopia", etc.
+  const tipoModo = modoSimbolos ? "Simbolos" : "Cores";
 
-          </div>
+  // Cria chave única com base nas combinações
+  const chaveRanking = `ranking_${nivelNome}_${tipoCor}_${tipoModo}`;
 
-          <div id="gameContainer" class="flex-1 border rounded overflow-hidden bg-white">
-            <div class="w-full h-full flex items-center justify-center text-slate-500">Escolha um jogo para iniciar.</div>
-          </div>
-        </div>
-      </section>
+  // Recupera o ranking existente ou cria um novo
+  const ranking = JSON.parse(localStorage.getItem(chaveRanking)) || [];
 
-    </main>
-  </div>
+  // Adiciona o novo resultado
+  ranking.push({ nome, tempo });
 
-  <!-- Modal evento -->
-  <div id="modalEvento" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md mx-auto shadow-lg">
-      <h3 class="font-semibold mb-2">Detalhes do Evento</h3>
-      <p id="detalhesEvento" class="text-sm text-slate-600 mb-4"></p>
-      <div class="text-right">
-        <button class="px-4 py-2 rounded bg-slate-200 text-slate-900" onclick="fecharModal()">Fechar</button>
-      </div>
-    </div>
-  </div>
+  // Ordena pelo menor tempo
+  ranking.sort((a, b) => a.tempo - b.tempo);
 
-<script>
-  /* ---------- Funções do Modal de Edição de Chapa ---------- */
-function abrirModalEditarChapa(chapa, index) {
-  document.getElementById('editChapaId').value = index;
-  document.getElementById('editNomeChapa').value = chapa.nome || '';
-  document.getElementById('editPropostaChapa').value = chapa.proposta || '';
-  document.getElementById('editIntegrantesChapa').value = chapa.integrantes || '';
-  
-  const imgPreview = document.getElementById('previewEditImagemChapa');
-  if(chapa.imagem){
-    imgPreview.src = chapa.imagem;
-    imgPreview.style.display = 'block';
+  // Mantém apenas os 10 melhores
+  const top10 = ranking.slice(0, 10);
+
+  // Salva novamente
+  localStorage.setItem(chaveRanking, JSON.stringify(top10));
+}
+
+// Mostra o ranking na tela
+function mostrarRanking() {
+  // Aqui usamos as mesmas combinações do Simon:
+  const nivelNome = niveis[nivelAtual]?.nome?.split(' ')[0] || 'Normal';
+  const tipoCor = modoDaltonismo || 'normal';
+  const tipoModo = modoSimbolos ? 'Simbolos' : 'Cores';
+  const chaveRanking = `ranking_${nivelNome}_${tipoCor}_${tipoModo}`;
+
+  const ranking = JSON.parse(localStorage.getItem(chaveRanking)) || [];
+  const rankingList = document.getElementById('ranking-list');
+  const rankingTitulo = document.getElementById('ranking-titulo');
+  const modal = document.getElementById('ranking-modal');
+
+  // Som de abertura opcional 🎵
+  const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2538/2538-preview.mp3');
+  audio.volume = 0.3;
+  audio.play();
+
+  rankingTitulo.textContent = `🏆 ${nivelNome.toUpperCase()} | ${tipoCor} | ${tipoModo}`;
+  rankingList.innerHTML = '';
+
+  if (ranking.length === 0) {
+    const vazio = document.createElement('p');
+    vazio.textContent = "Nenhum resultado salvo ainda para essa combinação.";
+    rankingList.appendChild(vazio);
   } else {
-    imgPreview.style.display = 'none';
-    imgPreview.src = '';
-  }
-
-  document.getElementById('modalEditarChapa').classList.remove('hidden');
-  document.getElementById('modalEditarChapa').classList.add('flex');
-}
-
-function fecharModalEditarChapa() {
-  document.getElementById('modalEditarChapa').classList.add('hidden');
-  document.getElementById('modalEditarChapa').classList.remove('flex');
-  document.getElementById('editImagemChapa').value = ''; // Limpa o input file
-}
-
-function salvarEdicaoChapa() {
-  const index = parseInt(document.getElementById('editChapaId').value, 10);
-  const nome = document.getElementById('editNomeChapa').value.trim();
-  const proposta = document.getElementById('editPropostaChapa').value.trim();
-  const integrantes = document.getElementById('editIntegrantesChapa').value.trim();
-  const file = document.getElementById('editImagemChapa').files[0];
-
-  if (!nome || !proposta) return alert('Nome e proposta são obrigatórios.');
-
-  const all = storage.chapas();
-  
-  if (index < 0 || index >= all.length) return alert('Erro: Chapa não encontrada.');
-
-  const chapaAtualizada = {
-    nome: nome,
-    proposta: proposta,
-    integrantes: integrantes,
-    imagem: all[index].imagem || '' // Mantém a imagem atual, a menos que uma nova seja carregada
-  };
-
-  const salvar = (imagemBase64) => {
-    if (imagemBase64) chapaAtualizada.imagem = imagemBase64;
-    
-    all[index] = chapaAtualizada;
-    storage.saveChapas(all);
-    renderChapas();
-    fecharModalEditarChapa();
-  };
-
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = ev => salvar(ev.target.result);
-    reader.readAsDataURL(file);
-  } else {
-    salvar();
-  }
-}
-/* ---------- permissões (role salvo em login.html) ---------- */
-let roleLocal = localStorage.getItem('role') || '';
-const nomeUsuario = localStorage.getItem('nomeUsuario') || 'Usuário';
-const fotoSalva = localStorage.getItem('fotoPerfil');
-
-/* preencher cabeçalho e dropdown */
-const perfilNomeHeaderEl = document.getElementById('perfilNomeHeader');
-const perfilFotoEl = document.getElementById('perfilFoto');
-const perfilFotoDropdownEl = document.getElementById('perfilFotoDropdown');
-const perfilNomeEl = document.getElementById('perfilNome');
-const perfilTipoEl = document.getElementById('perfilTipo');
-
-const perfilEmailEl = document.getElementById('perfilEmail');
-const perfilCursoEl = document.getElementById('perfilCurso');
-const perfilTurmaEl = document.getElementById('perfilTurma');
-
-const perfilVotosEl = document.getElementById('perfilVotos');
-const perfilPostsEl = document.getElementById('perfilPosts');
-const perfilJogosEl = document.getElementById('perfilJogos');
-
-const emailUsuario = localStorage.getItem('emailUsuario') || 'email@escola.com';
-const cursoUsuario = localStorage.getItem('cursoUsuario') || 'Informática';
-const turmaUsuario = localStorage.getItem('turmaUsuario') || '2º Ano';
-
-if(perfilNomeHeaderEl) perfilNomeHeaderEl.textContent = nomeUsuario;
-
-if(perfilFotoEl && fotoSalva) perfilFotoEl.src = fotoSalva;
-if(perfilFotoDropdownEl && fotoSalva) perfilFotoDropdownEl.src = fotoSalva;
-
-if(perfilNomeEl) perfilNomeEl.textContent = nomeUsuario;
-if(perfilTipoEl) perfilTipoEl.textContent =
-  roleLocal ? (roleLocal.charAt(0).toUpperCase() + roleLocal.slice(1)) : '';
-
-if(perfilEmailEl) perfilEmailEl.textContent = emailUsuario;
-if(perfilCursoEl) perfilCursoEl.textContent = cursoUsuario;
-if(perfilTurmaEl) perfilTurmaEl.textContent = turmaUsuario;
-
-// estatísticas automáticas
-if(perfilVotosEl) perfilVotosEl.textContent = localStorage.getItem('totalVotos') || 0;
-if(perfilJogosEl) perfilJogosEl.textContent = localStorage.getItem('jogosAbertos') || 0;
-
-
-/* toggle do dropdown */
-const perfilToggleBtn = document.getElementById('perfilToggle');
-const perfilDropdown = document.getElementById('perfilDropdown');
-const perfilWrapper = document.getElementById('perfilWrapper');
-if(perfilToggleBtn){
-  perfilToggleBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    if(perfilDropdown) perfilDropdown.classList.toggle('hidden');
-  });
-}
-window.addEventListener('click', function(e){
-  if(!e.target.closest('#perfilWrapper')){
-    if(perfilDropdown) perfilDropdown.classList.add('hidden');
-  }
-});
-
-/* storage helpers */
-const storage = {
-  avisos: ()=> JSON.parse(localStorage.getItem('avisos')||'[]'),
-  saveAvisos: arr => localStorage.setItem('avisos', JSON.stringify(arr)),
-  forum: ()=> JSON.parse(localStorage.getItem('forum')||'[]'),
-  saveForum: arr => localStorage.setItem('forum', JSON.stringify(arr)),
-  eventos: ()=> JSON.parse(localStorage.getItem('eventos')||'[]'),
-  saveEventos: arr => localStorage.setItem('eventos', JSON.stringify(arr)),
-  chapas: ()=> JSON.parse(localStorage.getItem('chapas')||'[]'),
-  saveChapas: arr => localStorage.setItem('chapas', JSON.stringify(arr)),
-};
-if(perfilPostsEl) perfilPostsEl.textContent = storage.forum().length;
-
-/* navigation */
-function mostrarTela(tela){
-  document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
-  const sec = document.getElementById(tela);
-  if(sec) sec.classList.remove('hidden');
-
-  document.querySelectorAll(".sidebar-btn").forEach(b => b.classList.remove('active'));
-  document.querySelectorAll(".subitem").forEach(b => b.classList.remove('active'));
-
-  if(tela === "chapas"){
-    document.getElementById("btnChapas").classList.add("active");
-    document.getElementById("subPropostas").classList.add("active");
-    abrirChapasSubmenu();
-  } else if (tela === "votacao"){
-    document.getElementById("btnChapas").classList.add("active");
-    document.getElementById("subVotacao").classList.add("active");
-    abrirChapasSubmenu();
-  } else if (tela === "avisos"){
-    document.getElementById("btnAvisos").classList.add("active");
-  } else if (tela === "forum"){
-    document.getElementById("btnForum").classList.add("active");
-  } else if (tela === "calendario"){
-    document.getElementById("btnCalendario").classList.add("active");
-  } else if (tela === "jogos"){
-    document.getElementById("btnJogos").classList.add("active");
-  }
-}
-
-function logout(){ localStorage.removeItem('role'); window.location.href = 'index.html'; }
-
-/* ---------- SIDEBAR ---------- */
-function handleSidebarClick(tela){
-  if(tela === "chapas" || tela === "votacao"){
-    abrirChapasSubmenu();
-  } else {
-    fecharChapasSubmenu();
-  }
-  mostrarTela(tela);
-}
-function toggleChapasMenu(){
-  const menu = document.getElementById("chapasSubmenu");
-  const atual = menu.style.display;
-  if(atual === "flex"){
-    menu.style.display = "none";
-  } else {
-    menu.style.display = "flex";
-  }
-}
-function abrirChapasSubmenu(){ document.getElementById("chapasSubmenu").style.display = "flex"; }
-function fecharChapasSubmenu(){ document.getElementById("chapasSubmenu").style.display = "none"; }
-
-/* ---------- AVISOS ---------- */
-function renderAvisos(){
-  const container = document.getElementById('listaAvisos');
-  container.innerHTML = '';
-  const avisos = storage.avisos();
-
-  if(!avisos || avisos.length === 0){
-    container.innerHTML = '<div class="text-slate-500">Nenhum aviso ainda.</div>';
-  } else {
-    avisos.forEach((a, idx) => {
-      // suporta tanto strings quanto objetos {texto: '...'}
-      const texto = (typeof a === 'string') ? a : (a.texto || '');
-      const item = document.createElement('div');
-      item.className = 'p-3 rounded border bg-white flex justify-between items-start';
-      item.innerHTML = `<div class="text-slate-800 font-medium">${texto}</div><div class="text-sm text-slate-500 mt-1">Publicado</div>`;
-      if(roleLocal === 'gestor'){
-        const wrap = document.createElement('div'); wrap.className = 'ml-4 flex flex-col gap-2';
-        const btnEdit = document.createElement('button'); btnEdit.className='px-3 py-1 bg-yellow-400 rounded text-slate-800 text-sm'; btnEdit.textContent='Editar';
-        btnEdit.onclick = ()=>{ const novo = prompt('Editar aviso:', texto); if(novo!==null){ const all = storage.avisos(); all[idx] = (typeof a === 'string') ? novo.trim() : {texto: novo.trim()}; storage.saveAvisos(all); renderAvisos(); } };
-        const btnDel = document.createElement('button'); btnDel.className='px-3 py-1 bg-red-500 rounded text-white text-sm'; btnDel.textContent='Apagar';
-        btnDel.onclick = ()=>{ if(!confirm('Confirma exclusão do aviso?')) return; const all = storage.avisos(); all.splice(idx,1); storage.saveAvisos(all); renderAvisos(); };
-        wrap.appendChild(btnEdit); wrap.appendChild(btnDel); item.appendChild(wrap);
-      }
-      container.appendChild(item);
+    ranking.forEach((jogador, i) => {
+      const minutos = Math.floor(jogador.tempo / 60);
+      const segundos = jogador.tempo % 60;
+      const linha = document.createElement('p');
+      linha.textContent = `${i + 1}. ${jogador.nome} — ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+      rankingList.appendChild(linha);
     });
   }
 
-  // mostra formulário apenas para gestor
-  const formEl = document.getElementById('formAviso');
-  if(formEl){
-    formEl.style.display = (roleLocal === 'gestor') ? 'block' : 'none';
-  }
+  document.getElementById('ranking-modal').style.display = 'flex';
 }
 
-document.getElementById('btnAddAviso')?.addEventListener('click', ()=>{
-  if(roleLocal !== 'gestor') return alert('Apenas gestores podem adicionar avisos.');
-  const input = document.getElementById('textoAviso');
-  const texto = input.value.trim();
-  if(!texto) return alert('Escreva algo para adicionar.');
-  const avisos = storage.avisos();
-  avisos.unshift({texto});
-  storage.saveAvisos(avisos);
-  input.value = '';
-  renderAvisos();
-});
-
-
-/* ---------- PALAVRAS PROIBIDAS ---------- */
-const palavrasProibidas = [
-  "caralho",
-"karalho",
-"k4r4lh0",
-"k4r4lho",
-"k4ralho",
-"kar4lho",
-"karalh0",
-"kar4lh0",
-"k4ralh0",
-"merda",
-"m3rd4",
-"merd4",
-"m3rda",
-"buceta",
-"bct",
-"bucet4",
-"pau no cu",
-"burro",
-"filha da puta",
-"fdp",
-"safado",
-"safada",
-"filho da puta",
-"puta",
-"puto",
-"safadinho",
-"safadinha",
-"periquita",
-"priquito",
-"prikito",
-"priquita",
-"prikita",
-"perereca",
-"xana",
-"penis",
-"pênis",
-"pau",
-"pinto",
-"piroca",
-"sexo",
-"fuder",
-"foda",
-"transa",
-"transar",
-"boquete",
-"bqt",
-"peito",
-"seios",
-"seio",
-"teta",
-"tetas",
-"putaria",
-"maconha",
-"tráfico",
-"trafico",
-"traficar",
-"cocaína",
-"cocaina",
-"droga",
-"drogas",
-"drogado",
-"drogada",
-"traficante",
-"matar",
-"assassinar",
-"atirar",
-"morrer",
-"pornô",
-"porno",
-"punheta",
-"punhetar",
-"siririca",
-"cacete",
-"kct",
-"kacete",
-"vadia",
-"vadio",
-"vagabundo",
-"vagabunda",
-"piranha",
-"fodido",
-"quenga",
-"filho da mae",
-"filha da mae",
-"filho da mãe",
-"filha da mãe",
-"toba",
-"cu",
-"anus",
-"anûs",
-"bunda",
-"bundinha",
-"nadegas",
-"bumbum",
-"vagina",
-"macaco",
-"negrinho",
-"viado",
-"bicha",
-"bixa",
-"viadinho",
-"traveco",
-"viagra",
-"tadalafila",
-"tesão",
-"tesao",
-"excitado",
-"excitar",
-"gozar",
-"gozo",
-"gozei",
-"gozado",
-"gozada",
-"leitada",
-"semen",
-"semên",
-"dedada",
-"balofo",
-"baseado",
-"cigarro",
-"pod",
-"vape",
-"gordão",
-"gordinho",
-"adotado",
-"estupro",
-"estuprar",
-"estuprada",
-"estuprado",
-"estrupo",
-"estrupar",
-"estrupado",
-"estrupada",
-"gostosa",
-"gostoso",
-"sexy",
-"pica",
-"pika",
-"porra",
-"puta que pariu",
-"pqp",
-"trepar",
-"xoxota",
-"arrombado",
-"babaca",
-"brocha",
-"boiola",
-"cracudo",
-"corno",
-"corna",
-"canalha",
-"desgraçado",
-"desgraçada",
-"otário",
-"otario",
-"imbecil",
-"abutre",
-"prostata",
-"prostáta",
-"asqueroso",
-"bandido",
-"trouxa",
-"bastardo",
-"bichona",
-"cagão",
-"cagao",
-"cegueta",
-"carniça",
-"chifrudo",
-"chifruda",
-"escroto",
-"escrota",
-"cagar",
-"bosta",
-"mijar",
-"peido",
-"peidar",
-"capeta",
-"cretino",
-"demonio",
-"escravo",
-"incapaz",
-"infeliz",
-"ladrão",
-"ladrao",
-"magricela",
-"necrófilo",
-"pintudo",
-"pirocudo",
-"sapatona",
-  
-  "xingo",
-  "idiota"
-];
-
-function contemPalavraProibida(texto){
-  const textoMinusculo = texto.toLowerCase();
-  return palavrasProibidas.some(palavra =>
-    textoMinusculo.includes(palavra.toLowerCase())
-  );
+function fecharRanking() {
+  document.getElementById('ranking-modal').style.display = 'none';
 }
 
 
-/* ---------- FORUM ---------- */
-function renderForum(){
-  const lista = document.getElementById('listaForum'); lista.innerHTML = '';
-  const posts = storage.forum();
-  if(posts.length === 0) lista.innerHTML = '<div class="text-slate-500">Nenhuma mensagem ainda.</div>';
-  posts.forEach((p, idx) => {
-    const card = document.createElement('div');
-    card.className = 'bg-white rounded p-4 shadow flex justify-between items-start gap-4 text-slate-900';
-    card.innerHTML = `<div><div class="text
--slate-800 font-medium">${p.texto || p}</div>
-      <div class="text-xs text-slate-500 mt-2">Publicado</div></div>`;
 
-    if(roleLocal === 'gestor'){
-      const actions = document.createElement('div'); actions.className='flex gap-2';
-      const btnDel = document.createElement('button');
-      btnDel.className='px-2 py-1 bg-red-500 text-white rounded text-sm';
-      btnDel.textContent='Apagar';
-      btnDel.onclick = ()=>{
-        if(!confirm('Remover esta mensagem?')) return;
-        const postsAll = storage.forum();
-        postsAll.splice(idx,1);
-        storage.saveForum(postsAll);
-        renderForum();
-      };
-      actions.appendChild(btnDel);
-      card.appendChild(actions);
-    }
-    lista.appendChild(card);
-  });
-}
+    </script>
 
-document.getElementById('formForum')?.addEventListener('submit', e=>{
-  e.preventDefault();
+    <!-- Botão de instruções no canto superior direito -->
+<button id="btnInstrucoes" style="
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 10px 15px;
+  background-color: #1E3A8A;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+">
+  Instruções
+</button>
 
-  const texto = document.getElementById('textoForum').value.trim();
-
-  if(!texto) return;
-
-  // ✅ VERIFICA PALAVRAS PROIBIDAS
-  if(contemPalavraProibida(texto)){
-    alert("Sua mensagem contém palavras proibidas e não pode ser enviada.");
-    return;
-  }
-
-  const posts = storage.forum();
-  posts.push({texto});
-  storage.saveForum(posts);
-
-  document.getElementById('textoForum').value = '';
-  renderForum();
-
-  setTimeout(()=>{
-    const box = document.getElementById('listaForum');
-    box.scrollTop = box.scrollHeight;
-  },80);
-});
-
-
-/* ---------- CALENDÁRIO ---------- */
-let hoje = new Date(), mes = hoje.getMonth(), ano = hoje.getFullYear();
-
-function renderCalendario(){
-  const grid = document.getElementById('calendarioGrid'); grid.innerHTML='';
-  const listaEventos = document.getElementById('listaEventos'); listaEventos.innerHTML='';
-  const base = new Date(ano, mes, 1);
-  document.getElementById('mesAtual').textContent =
-    base.toLocaleString('pt-BR', {month:'long', year:'numeric'});
-
-  const eventos = storage.eventos().filter(ev=>{
-    const d = new Date(ev.data+'T00:00:00');
-    return d.getMonth()===mes && d.getFullYear()===ano;
-  });
-
-  const startDay = base.getDay();
-  for(let i=0;i<startDay;i++){
-    const empty=document.createElement('div');
-    grid.appendChild(empty);
-  }
-
-  const daysInMonth = new Date(ano, mes+1, 0).getDate();
-  for(let d=1; d<=daysInMonth; d++){
-    const box = document.createElement('div');
-    const dataStr = `${ano}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const evs = eventos.filter(e=>e.data===dataStr);
-    const num = document.createElement('div');
-    num.className='dia-num'; num.textContent=d; box.appendChild(num);
-
-    if(d===hoje.getDate() && mes===hoje.getMonth() && ano===hoje.getFullYear()){
-      box.classList.add('hoje');
-    }
-
-    if(evs.length){
-      box.classList.add('tooltip');
-      const tip = document.createElement('div'); tip.className='tooltiptext';
-      tip.innerHTML = evs.map(e => `<div class="font-medium">${e.desc}</div>`).join('');
-      box.appendChild(tip);
-      const badge = document.createElement('div');
-      badge.className='dia-evento-badge mt-2';
-      badge.textContent = `${evs.length} evento${evs.length>1?'s':''}`;
-      box.appendChild(badge);
-    } else {
-      box.classList.add('bg-slate-50/80');
-    }
-
-    box.onclick = ()=>{ if(evs.length) abrirModal(dataStr); };
-    grid.appendChild(box);
-  }
-
-  eventos.forEach((ev, idx)=>{
-    const li = document.createElement('li');
-    li.className = 'p-2 rounded border flex justify-between items-center text-slate-900';
-    li.innerHTML = `<div><div class="font-medium">${ev.desc}</div>
-      <div class="text-sm text-slate-500">${new Date(ev.data+'T00:00:00').toLocaleDateString('pt-BR')}</div></div>`;
-
-    if(roleLocal==='gestor'){
-      const btn = document.createElement('button');
-      btn.className='px-2 py-1 bg-red-500 text-white rounded text-sm';
-      btn.textContent='Apagar';
-      btn.onclick = ()=>{
-        if(!confirm('Excluir evento?')) return;
-        const allEvents = storage.eventos();
-        const remaining = allEvents.filter(e => !(e.data===ev.data && e.desc===ev.desc));
-        storage.saveEventos(remaining);
-        renderCalendario();
-      };
-      li.appendChild(btn);
-    }
-    listaEventos.appendChild(li);
-  });
-
-  document.getElementById('formEvento').style.display =
-    (roleLocal==='gestor') ? 'flex' : 'none';
-}
-
-document.getElementById('formEvento')?.addEventListener('submit', e=>{
-  e.preventDefault();
-  if(roleLocal!=='gestor') return;
-  const data = document.getElementById('dataEvento').value;
-  const desc = document.getElementById('descEvento').value.trim();
-  if(!data || !desc) return alert('Preencha data e descrição.');
-  const evs = storage.eventos();
-  evs.push({data, desc});
-  storage.saveEventos(evs);
-  document.getElementById('dataEvento').value='';
-  document.getElementById('descEvento').value='';
-  renderCalendario();
-});
-
-function mudarMes(delta){
-  mes += delta;
-  if(mes<0){ mes=11; ano--; }
-  if(mes>11){ mes=0; ano++; }
-  renderCalendario();
-}
-
-function abrirModal(dataStr){
-  const ev = storage.eventos().find(e=>e.data===dataStr);
-  if(!ev) return;
-  document.getElementById('detalhesEvento').textContent =
-    `${new Date(ev.data+'T00:00:00').toLocaleDateString('pt-BR')}: ${ev.desc}`;
-  const modal=document.getElementById('modalEvento');
-  modal.classList.remove('hidden'); modal.classList.add('flex');
-}
-function fecharModal(){
-  const modal=document.getElementById('modalEvento');
-  modal.classList.add('hidden');
-}
-
-/* ---------- CHAPAS ---------- */
-function renderChapas(){
-  const list = document.getElementById('listaChapas'); list.innerHTML='';
-  const chapas = storage.chapas();
-  if(chapas.length===0){
-    list.innerHTML = '<div class="text-slate-500">Nenhuma chapa cadastrada.</div>';
-  }
-  chapas.forEach((c, idx)=>{
-    const li = document.createElement('li');
-    li.className='p-3 rounded border bg-white';
-    li.innerHTML = `<div class="font-medium text-lg text-slate-900">${c.nome}</div>
-      <div class="text-sm text-slate-600 mt-1">${c.proposta}</div>
-      <div class="text-sm italic mt-2 text-slate-500">Integrantes: ${c.integrantes||'-'}</div>`;
-    if(c.imagem){
-      const img=document.createElement('img');
-      img.src=c.imagem; img.className='mt-3 max-h-36 rounded';
-      li.appendChild(img);
-    }
-
-    if(roleLocal==='gestor'){
-      const wrap=document.createElement('div');
-      wrap.className='flex gap-2 mt-3';
-
-      // NOVO CÓDIGO (dentro de renderChapas):
-      const btnEdit=document.createElement('button');
-      btnEdit.className='px-3 py-1 bg-yellow-400 rounded text-slate-800';
-      btnEdit.textContent='Editar';
-      // Chama a nova função, passando o objeto 'chapa' (c) e seu índice (idx)
-      btnEdit.onclick=()=>{
-        abrirModalEditarChapa(c, idx);
-      };
-      const btnDel=document.createElement('button');
-      btnDel.className='px-3 py-1 bg-red-500 rounded text-white';
-      btnDel.textContent='Apagar';
-      btnDel.onclick=()=>{
-        if(!confirm('Excluir esta chapa?')) return;
-        const all = storage.chapas().filter((_,i)=>i!==idx);
-        storage.saveChapas(all);
-        renderChapas();
-      };
-
-      wrap.appendChild(btnEdit);
-      wrap.appendChild(btnDel);
-      li.appendChild(wrap);
-    }
-
-    list.appendChild(li);
-  });
-
-  document.getElementById('formChapa').style.display =
-    (roleLocal==='gestor') ? 'flex' : 'none';
-}
-
-document.getElementById('formChapa')?.addEventListener('submit', e=>{
-  e.preventDefault();
-  if(roleLocal!=='gestor') return;
-  const nome=document.getElementById('nomeChapa').value.trim();
-  const proposta=document.getElementById('propostaChapa').value.trim();
-  const integrantes=document.getElementById('integrantesChapa').value.trim();
-  const file=document.getElementById('imagemChapa').files[0];
-  if(!nome || !proposta) return alert('Nome e proposta obrigatórios.');
-
-  if(file){
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      const all=storage.chapas();
-      all.push({nome, proposta, integrantes, imagem:ev.target.result});
-      storage.saveChapas(all);
-      document.getElementById('formChapa').reset();
-      renderChapas();
-    };
-    reader.readAsDataURL(file);
-  } else {
-    const all=storage.chapas();
-    all.push({nome, proposta, integrantes});
-    storage.saveChapas(all);
-    document.getElementById('formChapa').reset();
-    renderChapas();
-  }
-});
-
-/* ---------- JOGOS ---------- */
-function abrirJogo(url){
-  const cont=document.getElementById('gameContainer');
-  cont.innerHTML = `<iframe src="${url}" class="w-full h-full border-0"></iframe>`;
-}
-function renderJogoContainer(){
-  document.getElementById('gameContainer').innerHTML =
-    `<div class="w-full h-full flex items-center justify-center text-slate-500">Escolha um jogo para iniciar.</div>`;
-}
-
-/* ---------- INICIAL ---------- */
-renderAvisos();
-renderForum();
-renderCalendario();
-renderChapas();
-mostrarTela('avisos');
-
-function abrirEditarPerfil(){
-  document.getElementById('modalPerfil').classList.remove('hidden');
-  document.getElementById('modalPerfil').classList.add('flex');
-
-  document.getElementById('novoNome').value = nomeUsuario;
-  document.getElementById('novoCurso').value = cursoUsuario;
-  document.getElementById('novaTurma').value = turmaUsuario;
-
-  const fotoAtual = localStorage.getItem('fotoPerfil');
-  if(fotoAtual){
-    document.getElementById('previewFoto').src = fotoAtual;
-  }
-}
-
-function fecharModalPerfil(){
-  const modal = document.getElementById('modalPerfil');
-  modal.classList.add('hidden');
-  modal.classList.remove('flex');
-}
-
-function salvarPerfil(){
-  const nome = document.getElementById('novoNome').value.trim();
-  const curso = document.getElementById('novoCurso').value.trim();
-  const turma = document.getElementById('novaTurma').value.trim();
-  const fotoInput = document.getElementById('inputFotoPerfil').files[0];
-
-  if(nome) localStorage.setItem('nomeUsuario', nome);
-  if(curso) localStorage.setItem('cursoUsuario', curso);
-  if(turma) localStorage.setItem('turmaUsuario', turma);
-
-  if(fotoInput){
-    const reader = new FileReader();
-    reader.onload = function(e){
-      localStorage.setItem('fotoPerfil', e.target.result);
-      atualizarPerfilTela();
-    };
-    reader.readAsDataURL(fotoInput);
-  } else {
-    atualizarPerfilTela();
-  }
-
-  fecharModalPerfil();
-}
-
-function atualizarPerfilTela(){
-  const nome = localStorage.getItem('nomeUsuario') || 'Usuário';
-  const curso = localStorage.getItem('cursoUsuario') || 'Informática';
-  const turma = localStorage.getItem('turmaUsuario') || '2º Ano';
-  const foto = localStorage.getItem('fotoPerfil');
-
-  document.getElementById('perfilNomeHeader').textContent = nome;
-  document.getElementById('perfilNome').textContent = nome;
-  document.getElementById('perfilCurso').textContent = curso;
-  document.getElementById('perfilTurma').textContent = turma;
-
-  if(foto){
-    document.getElementById('perfilFoto').src = foto;
-    document.getElementById('perfilFotoDropdown').src = foto;
-  }
-}
-
-
-window.addEventListener('DOMContentLoaded', ()=> {
-  document.querySelectorAll('.avatar-opcao').forEach(img=>{
-    img.addEventListener('click', ()=>{
-      const src = img.getAttribute('src');
-      localStorage.setItem('fotoPerfil', src);
-
-      document.getElementById('previewFoto').src = src;
-      document.getElementById('perfilFoto').src = src;
-      document.getElementById('perfilFotoDropdown').src = src;
-    });
-  });
-});
-
-
-function abrirModalAvatar() {
-  document.getElementById("modalAvatar").classList.remove("hidden");
-}
-
-function fecharModalAvatar() {
-  document.getElementById("modalAvatar").classList.add("hidden");
-}
-
-function selecionarAvatar(src) {
-  // salva no localStorage
-  localStorage.setItem("fotoPerfil", src);
-
-  // atualiza a foto no header
-  const perfilFoto = document.getElementById("perfilFoto");
-  const perfilFotoDropdown = document.getElementById("perfilFotoDropdown");
-
-  if (perfilFoto) perfilFoto.src = src;
-  if (perfilFotoDropdown) perfilFotoDropdown.src = src;
-
-  fecharModalAvatar();
-}
-
-</script>
-
-<!-- MODAL EDITAR PERFIL -->
-<div id="modalPerfil" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-xl p-6 w-full max-w-md text-slate-900">
-    <h2 class="text-lg font-semibold mb-4">Editar Perfil</h2>
-
-    <div class="flex flex-col items-center mb-4">
-      <img id="previewFoto" src="https://via.placeholder.com/96"
-        class="w-24 h-24 rounded-full object-cover border mb-2">
-      <input type="file" id="inputFotoPerfil" accept="image/*" class="text-sm">
-    </div>
-<p class="text-sm mt-3 mb-2 text-center">Ou escolha um avatar:</p>
-
-<div id="listaAvatares" class="grid grid-cols-5 gap-3 mb-4 justify-items-center">
-  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296998/Gemini_Generated_Image_suuw93suuw93suuw_yesnse.png" class="avatar-opcao">
-  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296884/Gemini_Generated_Image_4ha114ha114ha114_ddr8lb.png" class="avatar-opcao">
-  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296788/Gemini_Generated_Image_1th42t1th42t1th4_lrv7mp.png" class="avatar-opcao">
-  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296504/Gemini_Generated_Image_d3y60bd3y60bd3y6_niuk9l.png" class="avatar-opcao">
-  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296414/Gemini_Generated_Image_37126q37126q3712_b8shn6.png" class="avatar-opcao">
-  <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296269/Gemini_Generated_Image_hui2lbhui2lbhui2_tmxp33.png" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=7" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=8" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=9" class="avatar-opcao">
-  <img src="https://i.pravatar.cc/100?img=10" class="avatar-opcao">
-</div>
-
-    <div class="space-y-3">
-      <input id="novoNome" type="text" placeholder="Nome"
-        class="w-full border rounded px-3 py-2">
-      <input id="novoCurso" type="text" placeholder="Curso"
-        class="w-full border rounded px-3 py-2">
-      <input id="novaTurma" type="text" placeholder="Turma"
-        class="w-full border rounded px-3 py-2">
-    </div>
-
-    <div class="flex gap-3 mt-5">
-      <button onclick="salvarPerfil()"
-        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
-        Salvar
-      </button>
-      <button onclick="fecharModalPerfil()"
-        class="flex-1 bg-slate-300 hover:bg-slate-400 py-2 rounded">
-        Cancelar
-      </button>
-    </div>
+<!-- Modal de instruções -->
+<div id="modalInstrucoes" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+">
+  <div style="
+    background-color: #fff;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    position: relative;
+  ">
+    <h2 style="margin-top:0;">Jogo da Memória</h2>
+    <p><strong>Objetivo:</strong> Encontrar e combinar todos os pares de cartas/ícones iguais no menor tempo possível.</p>
+    <p><strong>Controles:</strong> Clique (ou toque no celular) em uma carta para virá‑la; depois clique em outra para ver se forma par.</p>
+    <p><strong>Regras:</strong></p>
+    <ul>
+      <li>Se forem diferentes, elas voltam ao estado virado para baixo.</li>
+      <li>O jogo termina quando todos os pares forem encontrados.</li>
+    </ul>
+    <p><strong>Dicas:</strong></p>
+    <ul>
+      <li>Memorize a posição das cartas que você já virou.</li>
+      <li>Trabalhe por seções — tente virar cartas próximas para lembrar melhor suas posições.</li>
+      <li>No começo do jogo, tente mapear sistematicamente para evitar virar aleatoriamente cartas espalhadas.</li>
+    </ul>
+    <button id="fecharModal" style="
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #1E3A8A;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    ">Fechar</button>
   </div>
 </div>
 
-<!-- MODAL DE ESCOLHER FOTO DE PERFIL -->
-<div id="modalAvatar" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white p-6 rounded-xl w-[360px] shadow-xl">
-
-    <h3 class="text-lg font-semibold mb-3 text-slate-700">Escolha seu Avatar</h3>
-
-    <div class="grid grid-cols-3 gap-3">
-      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296998/Gemini_Generated_Image_suuw93suuw93suuw_yesnse.png" class="avatar-opcao onclick="selecionarAvatar(this.src)">
-      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296884/Gemini_Generated_Image_4ha114ha114ha114_ddr8lb.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296788/Gemini_Generated_Image_1th42t1th42t1th4_lrv7mp.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296504/Gemini_Generated_Image_d3y60bd3y60bd3y6_niuk9l.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296414/Gemini_Generated_Image_37126q37126q3712_b8shn6.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-      <img src="https://res.cloudinary.com/dm9eurdck/image/upload/v1764296269/Gemini_Generated_Image_hui2lbhui2lbhui2_tmxp33.png" class="avatar-opcao" onclick="selecionarAvatar(this.src)">
-    </div>
-
-    <div class="mt-4 text-right">
-      <button class="px-4 py-2 bg-slate-300 rounded" onclick="fecharModalAvatar()">Fechar</button>
-    </div>
-
-  </div>
-</div>
-
+<!-- Script para abrir/fechar modal -->
 <script>
+  const btnInstrucoes = document.getElementById('btnInstrucoes');
+  const modal = document.getElementById('modalInstrucoes');
+  const fechar = document.getElementById('fecharModal');
 
-  const tipo = localStorage.getItem("role"); // CORRETO: você usa "role"
+  btnInstrucoes.addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
 
-  const topo = document.getElementById("tipoUsuarioTopo");
+  fechar.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
 
-  if (topo) {
-    if (tipo === "gestor") {
-      topo.textContent = "Gestor";
-      topo.style.background = "#b91c1c"; // vermelho
-    } 
-    else if (tipo === "aluno") {
-      topo.textContent = "Aluno";
-      topo.style.background = "#059669"; // verde
-    } 
-    else {
-      topo.textContent = "Desconectado";
-      topo.style.background = "#6b7280"; // cinza
+  // Fechar clicando fora da caixa do modal
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
     }
-  }
+  });
 </script>
 
-</script>
-<div id="modalEditarChapa" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-xl p-6 w-full max-w-md text-slate-900">
-    <h2 class="text-lg font-semibold mb-4">Editar Chapa</h2>
-
-    <div class="space-y-3">
-      <input id="editChapaId" type="hidden"> <input id="editNomeChapa" type="text" placeholder="Nome da chapa"
-        class="w-full border rounded px-3 py-2">
-      
-      <textarea id="editPropostaChapa" placeholder="Proposta da chapa"
-        class="w-full border rounded px-3 py-2 h-28 resize-none"></textarea>
-      
-      <input id="editIntegrantesChapa" type="text" placeholder="Integrantes (separados por vírgula)"
-        class="w-full border rounded px-3 py-2">
-      
-      <p class="text-sm text-slate-600">Imagem atual:</p>
-      <img id="previewEditImagemChapa" class="max-h-36 rounded mb-2" src="" alt="Imagem da Chapa">
-      <input id="editImagemChapa" type="file" accept="image/*" class="text-sm">
-    </div>
-
-    <div class="flex gap-3 mt-5">
-      <button onclick="salvarEdicaoChapa()"
-        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
-        Salvar Alterações
-      </button>
-      <button onclick="fecharModalEditarChapa()"
-        class="flex-1 bg-slate-300 hover:bg-slate-400 py-2 rounded">
-        Cancelar
-      </button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
+
