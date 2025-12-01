@@ -134,7 +134,6 @@ html, body {
   overflow: hidden !important;
 }
 
-
   </style>
 </head>
 
@@ -419,6 +418,69 @@ html, body {
   </div>
 
 <script>
+  /* ---------- Funções do Modal de Edição de Chapa ---------- */
+function abrirModalEditarChapa(chapa, index) {
+  document.getElementById('editChapaId').value = index;
+  document.getElementById('editNomeChapa').value = chapa.nome || '';
+  document.getElementById('editPropostaChapa').value = chapa.proposta || '';
+  document.getElementById('editIntegrantesChapa').value = chapa.integrantes || '';
+  
+  const imgPreview = document.getElementById('previewEditImagemChapa');
+  if(chapa.imagem){
+    imgPreview.src = chapa.imagem;
+    imgPreview.style.display = 'block';
+  } else {
+    imgPreview.style.display = 'none';
+    imgPreview.src = '';
+  }
+
+  document.getElementById('modalEditarChapa').classList.remove('hidden');
+  document.getElementById('modalEditarChapa').classList.add('flex');
+}
+
+function fecharModalEditarChapa() {
+  document.getElementById('modalEditarChapa').classList.add('hidden');
+  document.getElementById('modalEditarChapa').classList.remove('flex');
+  document.getElementById('editImagemChapa').value = ''; // Limpa o input file
+}
+
+function salvarEdicaoChapa() {
+  const index = parseInt(document.getElementById('editChapaId').value, 10);
+  const nome = document.getElementById('editNomeChapa').value.trim();
+  const proposta = document.getElementById('editPropostaChapa').value.trim();
+  const integrantes = document.getElementById('editIntegrantesChapa').value.trim();
+  const file = document.getElementById('editImagemChapa').files[0];
+
+  if (!nome || !proposta) return alert('Nome e proposta são obrigatórios.');
+
+  const all = storage.chapas();
+  
+  if (index < 0 || index >= all.length) return alert('Erro: Chapa não encontrada.');
+
+  const chapaAtualizada = {
+    nome: nome,
+    proposta: proposta,
+    integrantes: integrantes,
+    imagem: all[index].imagem || '' // Mantém a imagem atual, a menos que uma nova seja carregada
+  };
+
+  const salvar = (imagemBase64) => {
+    if (imagemBase64) chapaAtualizada.imagem = imagemBase64;
+    
+    all[index] = chapaAtualizada;
+    storage.saveChapas(all);
+    renderChapas();
+    fecharModalEditarChapa();
+  };
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => salvar(ev.target.result);
+    reader.readAsDataURL(file);
+  } else {
+    salvar();
+  }
+}
 /* ---------- permissões (role salvo em login.html) ---------- */
 let roleLocal = localStorage.getItem('role') || '';
 const nomeUsuario = localStorage.getItem('nomeUsuario') || 'Usuário';
@@ -984,19 +1046,14 @@ function renderChapas(){
       const wrap=document.createElement('div');
       wrap.className='flex gap-2 mt-3';
 
+      // NOVO CÓDIGO (dentro de renderChapas):
       const btnEdit=document.createElement('button');
       btnEdit.className='px-3 py-1 bg-yellow-400 rounded text-slate-800';
       btnEdit.textContent='Editar';
+      // Chama a nova função, passando o objeto 'chapa' (c) e seu índice (idx)
       btnEdit.onclick=()=>{
-        const novo = prompt('Editar proposta:', c.proposta);
-        if(novo!==null){
-          const all = storage.chapas();
-          all[idx].proposta = novo.trim();
-          storage.saveChapas(all);
-          renderChapas();
-        }
+        abrirModalEditarChapa(c, idx);
       };
-
       const btnDel=document.createElement('button');
       btnDel.className='px-3 py-1 bg-red-500 rounded text-white';
       btnDel.textContent='Apagar';
@@ -1256,6 +1313,36 @@ function selecionarAvatar(src) {
 </script>
 
 </script>
+<div id="modalEditarChapa" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-6 w-full max-w-md text-slate-900">
+    <h2 class="text-lg font-semibold mb-4">Editar Chapa</h2>
 
+    <div class="space-y-3">
+      <input id="editChapaId" type="hidden"> <input id="editNomeChapa" type="text" placeholder="Nome da chapa"
+        class="w-full border rounded px-3 py-2">
+      
+      <textarea id="editPropostaChapa" placeholder="Proposta da chapa"
+        class="w-full border rounded px-3 py-2 h-28 resize-none"></textarea>
+      
+      <input id="editIntegrantesChapa" type="text" placeholder="Integrantes (separados por vírgula)"
+        class="w-full border rounded px-3 py-2">
+      
+      <p class="text-sm text-slate-600">Imagem atual:</p>
+      <img id="previewEditImagemChapa" class="max-h-36 rounded mb-2" src="" alt="Imagem da Chapa">
+      <input id="editImagemChapa" type="file" accept="image/*" class="text-sm">
+    </div>
+
+    <div class="flex gap-3 mt-5">
+      <button onclick="salvarEdicaoChapa()"
+        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+        Salvar Alterações
+      </button>
+      <button onclick="fecharModalEditarChapa()"
+        class="flex-1 bg-slate-300 hover:bg-slate-400 py-2 rounded">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
